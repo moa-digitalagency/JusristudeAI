@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
 from backend.models.user import db, User
+from backend.models.role import Role
 
 auth_bp = Blueprint('auth', __name__)
 bcrypt = Bcrypt()
@@ -15,13 +16,16 @@ def register():
     
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     
+    juriste_role = Role.query.filter_by(name='Juriste').first()
+    
     new_user = User(
         email=data['email'],
         password_hash=hashed_password,
         first_name=data['first_name'],
         last_name=data['last_name'],
         is_approved=False,
-        is_admin=False
+        is_admin=False,
+        role_id=juriste_role.id if juriste_role else None
     )
     
     db.session.add(new_user)
@@ -92,15 +96,7 @@ def get_all_users():
         users = User.query.all()
     
     return jsonify({
-        'users': [{
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_approved': user.is_approved,
-            'is_admin': user.is_admin,
-            'created_at': user.created_at.isoformat()
-        } for user in users]
+        'users': [user.to_dict() for user in users]
     }), 200
 
 @auth_bp.route('/admin/users/<int:user_id>', methods=['GET'])
@@ -110,15 +106,7 @@ def get_user(user_id):
         return jsonify({'error': 'Accès non autorisé'}), 403
     
     user = User.query.get_or_404(user_id)
-    return jsonify({
-        'id': user.id,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'is_approved': user.is_approved,
-        'is_admin': user.is_admin,
-        'created_at': user.created_at.isoformat()
-    }), 200
+    return jsonify(user.to_dict()), 200
 
 @auth_bp.route('/admin/users/<int:user_id>', methods=['PUT'])
 @login_required

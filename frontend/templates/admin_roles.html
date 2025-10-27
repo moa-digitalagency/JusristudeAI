@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Rôles - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            color: #3b82f6;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .permission-category {
+            margin-bottom: 1.5rem;
+        }
+        
+        .permission-category h4 {
+            margin-bottom: 0.75rem;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .permission-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+        
+        .permission-checkbox:hover {
+            background: #f3f4f6;
+        }
+        
+        .permission-checkbox input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .role-badge.system {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .role-badge.custom {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-balance-scale"></i> Base de Jurisprudence
+            </a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+                <a href="/search" class="nav-link">
+                    <i class="fas fa-search"></i> Recherche IA
+                </a>
+                <a href="/cases" class="nav-link">
+                    <i class="fas fa-folder"></i> Cas
+                </a>
+                <a href="/admin" class="nav-link active" id="admin-link">
+                    <i class="fas fa-cog"></i> Administration
+                </a>
+                <button id="logout-btn" class="btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1><i class="fas fa-user-tag"></i> Gestion des Rôles et Permissions</h1>
+        
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='/admin'">
+                <i class="fas fa-users"></i> Utilisateurs
+            </button>
+            <button class="tab active">
+                <i class="fas fa-user-tag"></i> Rôles
+            </button>
+        </div>
+        
+        <div id="alert-container"></div>
+        
+        <div class="section-violet" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2><i class="fas fa-list"></i> Liste des Rôles</h2>
+                <button class="btn-primary" onclick="openCreateRoleModal()">
+                    <i class="fas fa-plus"></i> Créer un rôle
+                </button>
+            </div>
+            
+            <div id="roles-list">
+                <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                    <i class="fas fa-spinner fa-spin"></i> Chargement...
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal de création/édition de rôle -->
+    <div id="role-modal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="modal-title"><i class="fas fa-plus"></i> Créer un rôle</h2>
+                <button class="btn-secondary btn-sm" onclick="closeRoleModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="role-form">
+                <input type="hidden" id="role-id">
+                
+                <div class="form-group">
+                    <label class="form-label" for="role-name">
+                        <i class="fas fa-tag"></i> Nom du rôle
+                    </label>
+                    <input type="text" id="role-name" class="input-field" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="role-description">
+                        <i class="fas fa-info-circle"></i> Description
+                    </label>
+                    <textarea id="role-description" class="input-field" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-key"></i> Permissions
+                    </label>
+                    <div id="permissions-list"></div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="closeRoleModal()">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/static/js/admin_roles.js"></script>
+</body>
+</html>

@@ -250,18 +250,6 @@ function displayResults(data) {
             `;
         }
         
-        // Afficher les recommandations
-        if (data.recommendations) {
-            html += `
-                <div class="section-orange mb-3">
-                    <h3><i class="bi bi-star"></i> Recommandations</h3>
-                    <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6;">
-                        ${data.recommendations}
-                    </div>
-                </div>
-            `;
-        }
-        
         html += `
             <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #6b7280; text-align: center;">
                 <i class="bi bi-cpu"></i> Analyse réalisée par ${data.model_used || 'IA'}

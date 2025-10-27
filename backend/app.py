@@ -7,6 +7,7 @@ from backend.models.user import db, User
 from backend.routes.auth import auth_bp, bcrypt
 from backend.routes.cases import cases_bp
 from backend.routes.batch_import import batch_import_bp
+from backend.routes.roles import roles_bp
 from backend.utils.secrets_checker import secrets_checker
 
 secrets_checker.check_and_exit_if_missing_critical()
@@ -22,6 +23,7 @@ csrf = CSRFProtect(app)
 csrf.exempt(auth_bp)
 csrf.exempt(cases_bp)
 csrf.exempt(batch_import_bp)
+csrf.exempt(roles_bp)
 
 db.init_app(app)
 bcrypt.init_app(app)
@@ -40,6 +42,7 @@ def load_user(user_id):
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(cases_bp, url_prefix='/api')
 app.register_blueprint(batch_import_bp, url_prefix='/api')
+app.register_blueprint(roles_bp, url_prefix='/api')
 
 @app.after_request
 def add_header(response):
@@ -68,6 +71,10 @@ def search_page():
 def admin_page():
     return render_template('admin_new.html')
 
+@app.route('/admin/roles')
+def admin_roles_page():
+    return render_template('admin_roles.html')
+
 @app.route('/cases')
 def cases_page():
     return render_template('cases.html')
@@ -87,8 +94,17 @@ with app.app_context():
     except Exception as e:
         print(f"⚠️  Tables already exist or error creating tables: {e}")
     
+    from backend.init_roles import initialize_roles_and_permissions
     try:
+        initialize_roles_and_permissions(app)
+    except Exception as e:
+        print(f"⚠️  Error initializing roles and permissions: {e}")
+    
+    try:
+        from backend.models.role import Role
         admin = User.query.filter_by(email='admin@jurisprudence.com').first()
+        admin_role = Role.query.filter_by(name='Administrateur').first()
+        
         if not admin:
             from flask_bcrypt import generate_password_hash
             admin_user = User(
@@ -97,7 +113,8 @@ with app.app_context():
                 first_name='Admin',
                 last_name='System',
                 is_approved=True,
-                is_admin=True
+                is_admin=True,
+                role_id=admin_role.id if admin_role else None
             )
             db.session.add(admin_user)
             db.session.commit()
