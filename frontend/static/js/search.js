@@ -143,17 +143,90 @@ function displayResults(data) {
             </div>
         `;
     } else if (data.success) {
-        resultsContent.innerHTML = `
-            <div class="section-green mb-3">
-                <h3>Analyse IA</h3>
-                <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6;">
-                    ${formatAIResponse(data.ai_analysis)}
-                </div>
-                <p style="margin-top: 1rem; font-size: 0.8rem; color: #6b7280;">
-                    Modèle utilisé: ${data.model_used}
+        let html = `
+            <div class="section-blue mb-3">
+                <h3><i class="bi bi-database"></i> Base de données analysée</h3>
+                <p style="margin: 0; font-size: 0.95rem;">
+                    <strong>${data.total_cases_in_db || 0}</strong> cas au total dans la base de données
+                    <br>
+                    <strong>${data.total_cases_analyzed || 0}</strong> cas analysés par l'IA
                 </p>
             </div>
         `;
+        
+        // Afficher les cas similaires trouvés
+        if (data.similar_cases && data.similar_cases.length > 0) {
+            html += `
+                <div class="section-green mb-3">
+                    <h3><i class="bi bi-search"></i> Cas similaires trouvés (${data.similar_cases.length})</h3>
+            `;
+            
+            data.similar_cases.forEach((caseItem, index) => {
+                const reason = data.similarity_reasons ? data.similarity_reasons[caseItem.ref] : '';
+                html += `
+                    <div class="card mb-2" style="border-left: 3px solid #10b981;">
+                        <h4 style="color: #10b981; margin-bottom: 0.5rem;">
+                            ${index + 1}. Réf ${caseItem.ref} - ${caseItem.titre || 'Sans titre'}
+                        </h4>
+                        <div style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.5rem;">
+                            <strong>Juridiction:</strong> ${caseItem.juridiction || 'N/A'} | 
+                            <strong>Date:</strong> ${caseItem.date_decision || 'N/A'}
+                        </div>
+                        ${reason ? `
+                            <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+                                <strong style="color: #059669;">Raison de similarité:</strong>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">${reason}</p>
+                            </div>
+                        ` : ''}
+                        <div style="margin-top: 0.75rem;">
+                            <a href="/cases#case-${caseItem.id}" class="btn btn-sm btn-primary">
+                                Voir le cas complet
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        } else {
+            html += `
+                <div class="alert alert-info">
+                    <strong>Aucun cas similaire trouvé</strong> dans la base de données analysée.
+                </div>
+            `;
+        }
+        
+        // Afficher l'analyse
+        if (data.analysis) {
+            html += `
+                <div class="section-purple mb-3">
+                    <h3><i class="bi bi-lightbulb"></i> Analyse juridique</h3>
+                    <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6;">
+                        ${data.analysis}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Afficher les recommandations
+        if (data.recommendations) {
+            html += `
+                <div class="section-orange mb-3">
+                    <h3><i class="bi bi-star"></i> Recommandations</h3>
+                    <div style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6;">
+                        ${data.recommendations}
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += `
+            <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #6b7280; text-align: center;">
+                <i class="bi bi-cpu"></i> Analyse réalisée par ${data.model_used || 'IA'}
+            </p>
+        `;
+        
+        resultsContent.innerHTML = html;
     } else {
         resultsContent.innerHTML = `
             <div class="card">

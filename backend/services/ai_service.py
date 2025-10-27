@@ -14,24 +14,51 @@ class AIService:
                 'analysis': 'Veuillez configurer OPENROUTER_API_KEY'
             }
         
-        cases_context = "\n\n".join([
-            f"Cas #{case['case_number']}: {case['title']}\n{case['description'][:200]}..."
-            for case in existing_cases[:50]
-        ])
+        # Créer un index complet de tous les cas avec leurs informations
+        cases_index = []
+        for i, case in enumerate(existing_cases):
+            # Construire un contexte riche pour chaque cas
+            case_text = f"""Réf: {case.get('ref', 'N/A')}
+Titre: {case.get('titre', 'N/A')}
+Juridiction: {case.get('juridiction', 'N/A')}
+Date: {case.get('date_decision', 'N/A')}
+Thème: {case.get('theme', 'N/A')}
+Mots-clés: {case.get('mots_cles', 'N/A')}
+Résumé FR: {(case.get('resume_francais', '')[:300] + '...' if len(case.get('resume_francais', '')) > 300 else case.get('resume_francais', 'N/A'))}"""
+            
+            cases_index.append({
+                'index': i,
+                'ref': case.get('ref'),
+                'titre': case.get('titre'),
+                'context': case_text
+            })
         
-        prompt = f"""En tant qu'expert juridique, analysez le cas suivant et identifiez les cas similaires parmi la jurisprudence fournie.
+        # Limiter à 50 cas pour ne pas dépasser la limite de tokens
+        cases_sample = cases_index[:50] if len(cases_index) > 50 else cases_index
+        
+        cases_context = "\n\n---\n\n".join([c['context'] for c in cases_sample])
+        
+        prompt = f"""Tu es un expert juridique spécialisé dans le droit marocain. Analyse la description du cas fournie et trouve les cas similaires dans la jurisprudence.
 
 CAS À ANALYSER:
 {case_description}
 
-JURISPRUDENCE DISPONIBLE:
+JURISPRUDENCE DISPONIBLE ({len(cases_sample)} cas sur {len(existing_cases)} au total):
 {cases_context}
 
-Répondez au format JSON avec:
-1. similar_cases: liste des numéros de cas similaires (maximum 5)
-2. similarity_scores: scores de similarité pour chaque cas (0-100)
-3. analysis: analyse détaillée des similitudes
-4. recommendations: recommandations pour la plaidoirie"""
+Analyse les cas et identifie ceux qui sont les plus pertinents. Retourne ta réponse au format JSON strict suivant:
+{{
+  "similar_cases": ["réf1", "réf2", "réf3"],
+  "similarity_reasons": {{
+    "réf1": "raison détaillée",
+    "réf2": "raison détaillée",
+    "réf3": "raison détaillée"
+  }},
+  "analysis": "analyse globale des similitudes trouvées",
+  "recommendations": "recommandations juridiques basées sur ces précédents"
+}}
+
+Trouve maximum 5 cas les plus similaires. Si aucun cas similaire n'existe, retourne une liste vide."""
 
         try:
             headers = {
@@ -46,26 +73,63 @@ Répondez au format JSON avec:
                     {'role': 'user', 'content': prompt}
                 ],
                 'temperature': 0.3,
-                'max_tokens': 2000
+                'max_tokens': 3000
             }
             
-            response = requests.post(self.api_url, json=data, headers=headers, timeout=30)
+            response = requests.post(self.api_url, json=data, headers=headers, timeout=60)
             response.raise_for_status()
             
             result = response.json()
             ai_response = result['choices'][0]['message']['content']
             
-            return {
-                'success': True,
-                'ai_analysis': ai_response,
-                'model_used': result.get('model', 'anthropic/claude-3.5-sonnet')
-            }
+            # Extraire le JSON de la réponse
+            import json
+            import re
+            
+            # Chercher le JSON dans la réponse
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                parsed_result = json.loads(json_match.group(0))
+                
+                # Récupérer les cas complets correspondants
+                similar_refs = parsed_result.get('similar_cases', [])
+                matched_cases = []
+                for case in existing_cases:
+                    if case.get('ref') in similar_refs:
+                        matched_cases.append(case)
+                
+                return {
+                    'success': True,
+                    'similar_cases': matched_cases,
+                    'analysis': parsed_result.get('analysis', ''),
+                    'recommendations': parsed_result.get('recommendations', ''),
+                    'similarity_reasons': parsed_result.get('similarity_reasons', {}),
+                    'total_cases_analyzed': len(cases_sample),
+                    'total_cases_in_db': len(existing_cases),
+                    'model_used': 'anthropic/claude-3.5-sonnet'
+                }
+            else:
+                # Si pas de JSON trouvé, retourner la réponse brute
+                return {
+                    'success': True,
+                    'similar_cases': [],
+                    'analysis': ai_response,
+                    'recommendations': '',
+                    'total_cases_analyzed': len(cases_sample),
+                    'total_cases_in_db': len(existing_cases)
+                }
             
         except requests.exceptions.RequestException as e:
             return {
                 'error': f'Erreur API: {str(e)}',
                 'similar_cases': [],
                 'analysis': 'Impossible de contacter le service IA'
+            }
+        except Exception as e:
+            return {
+                'error': f'Erreur de traitement: {str(e)}',
+                'similar_cases': [],
+                'analysis': 'Erreur lors de l\'analyse de la réponse'
             }
 
 ai_service = AIService()
