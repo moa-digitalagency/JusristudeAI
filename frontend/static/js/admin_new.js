@@ -45,8 +45,9 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 // Charger les utilisateurs
 async function loadUsers() {
     try {
-        const response = await fetch('/api/auth/users');
-        const users = await response.json();
+        const response = await fetch('/api/auth/admin/users');
+        const data = await response.json();
+        const users = data.users || [];
         
         const usersList = document.getElementById('users-list');
         if (users.length === 0) {
@@ -78,7 +79,7 @@ async function loadUsers() {
 // Approuver un utilisateur
 async function approveUser(userId) {
     try {
-        const response = await fetch(`/api/auth/users/${userId}/approve`, { method: 'POST' });
+        const response = await fetch(`/api/auth/admin/approve/${userId}`, { method: 'POST' });
         if (response.ok) {
             showAlert('Utilisateur approuvé avec succès');
             loadUsers();

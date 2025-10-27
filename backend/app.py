@@ -55,7 +55,7 @@ def search_page():
 
 @app.route('/admin')
 def admin_page():
-    return render_template('admin.html')
+    return render_template('admin_new.html')
 
 @app.route('/api/csrf-token', methods=['GET'])
 def get_csrf_token():
