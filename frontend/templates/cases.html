@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Cas - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cases-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .danger-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
+        }
+        
+        .danger-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .cases-table {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 3px dotted #3b82f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1f2937;
+            border-bottom: 2px solid #3b82f6;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #4b5563;
+        }
+        
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .view-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .view-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .page-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #3b82f6;
+            background: white;
+            color: #3b82f6;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .page-btn:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .page-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: white;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 3px dotted #3b82f6;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            color: #1f2937;
+        }
+        
+        .case-detail-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .case-detail-section h3 {
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.5rem;
+        }
+        
+        .case-detail-section p {
+            line-height: 1.6;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="cases-container">
+        <div class="header-actions">
+            <h1 style="color: #1f2937;">📚 Liste des Cas de Jurisprudence</h1>
+            <div>
+                <button onclick="window.location.href='/dashboard'" class="moa-button">
+                    <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+                </button>
+                <button onclick="deleteAllCases()" class="danger-btn">
+                    <i class="fas fa-trash"></i> Supprimer tout
+                </button>
+            </div>
+        </div>
+        
+        <div class="cases-table">
+            <table id="casesTable">
+                <thead>
+                    <tr>
+                        <th>Réf</th>
+                        <th>Titre</th>
+                        <th>Juridiction</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="casesTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+    </div>
+    
+    <div id="caseModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="caseDetails"></div>
+        </div>
+    </div>
+    
+    <script src="/static/js/cases.js"></script>
+</body>
+</html>

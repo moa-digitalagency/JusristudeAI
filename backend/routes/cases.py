@@ -188,3 +188,21 @@ def get_stats():
         'total_cases': total_cases,
         'user_searches': user_searches
     }), 200
+
+@cases_bp.route('/cases/delete-all', methods=['DELETE'])
+@login_required
+def delete_all_cases():
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    try:
+        count = JurisprudenceCase.query.count()
+        JurisprudenceCase.query.delete()
+        db.session.commit()
+        return jsonify({
+            'message': f'{count} cas supprimés avec succès',
+            'count': count
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500
