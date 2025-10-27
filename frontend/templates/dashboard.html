@@ -64,22 +64,30 @@
         }
         
         .welcome-banner {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+            color: #1f2937;
             padding: 2rem;
             border-radius: 16px;
             margin-bottom: 2rem;
-            border: none;
+            border: 3px dotted #3b82f6;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .welcome-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(59, 130, 246, 0.15);
         }
         
         .welcome-banner h2 {
             margin: 0 0 1rem 0;
             font-size: 1.75rem;
+            color: #1f2937;
         }
         
         .welcome-banner p {
             margin: 0 0 1.5rem 0;
-            opacity: 0.9;
+            color: #4b5563;
         }
         
         .recent-cases-table {
@@ -144,7 +152,7 @@
             <p>
                 <i class="fas fa-info-circle"></i> Utilisez notre moteur de recherche IA pour trouver des cas de jurisprudence similaires à votre affaire.
             </p>
-            <a href="/search" class="btn-primary" style="background: white; color: #3b82f6; border-color: white;">
+            <a href="/search" class="btn-primary">
                 <i class="fas fa-search"></i> Lancer une recherche
             </a>
         </div>
