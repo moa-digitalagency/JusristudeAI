@@ -210,7 +210,7 @@ async function deleteUser(userId) {
 // Charger les cas
 async function loadCases() {
     try {
-        const response = await fetch('/api/cases', { credentials: 'include' });
+        const response = await fetch('/api/cases?per_page=1000', { credentials: 'include' });
         const data = await response.json();
         
         const casesList = document.getElementById('cases-list');
@@ -220,9 +220,26 @@ async function loadCases() {
         }
         
         casesList.innerHTML = `
+            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <button onclick="toggleSelectAll()" class="action-btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                    <i class="fas fa-check-double"></i> <span id="select-all-text">Sélectionner tout</span>
+                </button>
+                <button onclick="deleteSelected()" class="action-btn delete" id="delete-selected-btn" style="display: none;">
+                    <i class="fas fa-trash-alt"></i> Supprimer la sélection (<span id="selected-count">0</span>)
+                </button>
+                <button onclick="deleteAllCases()" class="action-btn" style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                    <i class="fas fa-exclamation-triangle"></i> Supprimer tout
+                </button>
+                <span style="color: #6b7280; font-weight: 500;">
+                    <i class="fas fa-database"></i> Total: ${data.cases.length} cas
+                </span>
+            </div>
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width: 50px;">
+                            <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
+                        </th>
                         <th><i class="fas fa-hashtag"></i> Ref</th>
                         <th><i class="fas fa-heading"></i> Titre</th>
                         <th><i class="fas fa-landmark"></i> Juridiction</th>
@@ -232,7 +249,10 @@ async function loadCases() {
                 </thead>
                 <tbody>
                     ${data.cases.map(c => `
-                        <tr>
+                        <tr id="case-row-${c.id}">
+                            <td>
+                                <input type="checkbox" class="case-checkbox" value="${c.id}" onchange="updateSelectedCount()" style="cursor: pointer; width: 18px; height: 18px;">
+                            </td>
                             <td><strong>${c.ref || 'N/A'}</strong></td>
                             <td>${c.titre || 'Sans titre'}</td>
                             <td>${c.juridiction || 'N/A'}</td>
@@ -677,6 +697,120 @@ document.getElementById('add-case-form')?.addEventListener('submit', async (e) =
         showAlert('Erreur: ' + error.message, 'error');
     }
 });
+
+// Fonctions de sélection multiple pour les cas
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const checkboxes = document.querySelectorAll('.case-checkbox');
+    const isChecked = selectAllCheckbox ? selectAllCheckbox.checked : false;
+    
+    checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+    });
+    
+    updateSelectedCount();
+    
+    const selectAllText = document.getElementById('select-all-text');
+    if (selectAllText) {
+        selectAllText.textContent = isChecked ? 'Désélectionner tout' : 'Sélectionner tout';
+    }
+}
+
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.case-checkbox:checked');
+    const count = checkboxes.length;
+    const selectedCountSpan = document.getElementById('selected-count');
+    const deleteBtn = document.getElementById('delete-selected-btn');
+    
+    if (selectedCountSpan) {
+        selectedCountSpan.textContent = count;
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+    
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const allCheckboxes = document.querySelectorAll('.case-checkbox');
+    if (selectAllCheckbox && allCheckboxes.length > 0) {
+        selectAllCheckbox.checked = count === allCheckboxes.length;
+        const selectAllText = document.getElementById('select-all-text');
+        if (selectAllText) {
+            selectAllText.textContent = selectAllCheckbox.checked ? 'Désélectionner tout' : 'Sélectionner tout';
+        }
+    }
+}
+
+async function deleteSelected() {
+    const checkboxes = document.querySelectorAll('.case-checkbox:checked');
+    const caseIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (caseIds.length === 0) {
+        showAlert('Aucun cas sélectionné', 'error');
+        return;
+    }
+    
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${caseIds.length} cas sélectionné(s) ? Cette action est irréversible.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/cases/delete-selected', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ case_ids: caseIds }),
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert(data.message || 'Cas supprimés avec succès');
+            loadCases();
+        } else {
+            showAlert(data.error || 'Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showAlert('Erreur lors de la suppression: ' + error.message, 'error');
+    }
+}
+
+async function deleteAllCases() {
+    const response = await fetch('/api/cases', { credentials: 'include' });
+    const data = await response.json();
+    const totalCases = data.cases.length;
+    
+    if (totalCases === 0) {
+        showAlert('Aucun cas à supprimer', 'error');
+        return;
+    }
+    
+    if (!confirm(`⚠️ ATTENTION! Vous allez supprimer TOUS les ${totalCases} cas de jurisprudence.\n\nCette action est IRRÉVERSIBLE.\n\nÊtes-vous absolument sûr de vouloir continuer ?`)) {
+        return;
+    }
+    
+    if (!confirm(`Dernière confirmation: Supprimer définitivement ${totalCases} cas ?`)) {
+        return;
+    }
+    
+    try {
+        const deleteResponse = await fetch('/api/cases/delete-all', {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        const deleteData = await deleteResponse.json();
+        
+        if (deleteResponse.ok) {
+            showAlert(deleteData.message || 'Tous les cas ont été supprimés');
+            loadCases();
+        } else {
+            showAlert(deleteData.error || 'Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showAlert('Erreur lors de la suppression: ' + error.message, 'error');
+    }
+}
 
 // Charger les données initiales
 loadStats();

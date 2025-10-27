@@ -206,3 +206,32 @@ def delete_all_cases():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500
+
+@cases_bp.route('/cases/delete-selected', methods=['POST'])
+@login_required
+def delete_selected_cases():
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    data = request.get_json()
+    case_ids = data.get('case_ids', [])
+    
+    if not case_ids:
+        return jsonify({'error': 'Aucun cas sélectionné'}), 400
+    
+    try:
+        deleted_count = 0
+        for case_id in case_ids:
+            case = JurisprudenceCase.query.get(case_id)
+            if case:
+                db.session.delete(case)
+                deleted_count += 1
+        
+        db.session.commit()
+        return jsonify({
+            'message': f'{deleted_count} cas supprimé(s) avec succès',
+            'count': deleted_count
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erreur lors de la suppression: {str(e)}'}), 500
