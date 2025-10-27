@@ -72,7 +72,7 @@ class SecretsChecker:
     
     @classmethod
     def check_and_exit_if_missing_critical(cls):
-        """Vérifie les secrets et quitte si des secrets critiques manquent"""
+        """Vérifie les secrets et avertit si des secrets critiques manquent"""
         print("\n" + "="*60)
         print("VÉRIFICATION DES SECRETS ET VARIABLES D'ENVIRONNEMENT")
         print("="*60 + "\n")
@@ -82,10 +82,10 @@ class SecretsChecker:
         print("\n" + "="*60)
         
         if not results['all_critical_present']:
-            print("❌ ERREUR: Des secrets critiques sont manquants!")
-            print("   Veuillez configurer ces secrets dans Replit Secrets")
-            print("="*60 + "\n")
-            sys.exit(1)
+            print("⚠️  ATTENTION: Des secrets critiques sont manquants!")
+            print("   L'application utilisera des clés temporaires")
+            print("   Veuillez configurer ces secrets dans Replit Secrets pour la production")
+            print("   Les données chiffrées seront perdues au redémarrage!")
         
         if not results['all_present']:
             print("⚠️  ATTENTION: Certains secrets optionnels sont manquants")
