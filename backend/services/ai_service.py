@@ -86,10 +86,31 @@ Trouve maximum 5 cas les plus similaires. Si aucun cas similaire n'existe, retou
             import json
             import re
             
-            # Chercher le JSON dans la réponse
-            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
-            if json_match:
-                parsed_result = json.loads(json_match.group(0))
+            # Chercher le JSON dans la réponse (entre ```json et ``` si présent, sinon chercher {})
+            json_match = re.search(r'```json\s*(\{.*?\})\s*```', ai_response, re.DOTALL)
+            if not json_match:
+                json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+                json_str = json_match.group(0) if json_match else None
+            else:
+                json_str = json_match.group(1)
+            
+            if json_str:
+                # Nettoyer les caractères de contrôle non échappés
+                import unicodedata
+                json_str_cleaned = ''.join(
+                    char if ord(char) >= 32 or char in '\n\r\t' else ' '
+                    for char in json_str
+                )
+                
+                try:
+                    parsed_result = json.loads(json_str_cleaned, strict=False)
+                except json.JSONDecodeError as json_err:
+                    # Si le parsing échoue, essayer de parser sans les newlines
+                    try:
+                        json_str_cleaned = json_str.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+                        parsed_result = json.loads(json_str_cleaned, strict=False)
+                    except:
+                        raise json_err
                 
                 # Récupérer les cas complets correspondants
                 similar_refs = parsed_result.get('similar_cases', [])
