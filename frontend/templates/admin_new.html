@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px dotted #3b82f6;
+            padding-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border: 3px dotted #d1d5db;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        .batch-status {
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">Jurisprudence</a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">Tableau de bord</a>
+                <a href="/search" class="nav-link">Recherche IA</a>
+                <a href="/admin" class="nav-link">Administration</a>
+                <button id="logout-btn" class="btn-secondary">Déconnexion</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Panneau d'administration</h1>
+        
+        <div id="alert-container"></div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('users')">Utilisateurs</div>
+            <div class="tab" onclick="switchTab('cases')">Cas de jurisprudence</div>
+            <div class="tab" onclick="switchTab('batch-import')">Importation en Masse</div>
+            <div class="tab" onclick="switchTab('single-pdf')">Import PDF Simple</div>
+            <div class="tab" onclick="switchTab('add-case')">Ajouter un Cas</div>
+        </div>
+        
+        <!-- Utilisateurs Tab -->
+        <div id="users-tab" class="tab-content active">
+            <div class="section-violet">
+                <h2>Gestion des Utilisateurs</h2>
+                <div id="users-list">
+                    <p style="color: #6b7280; text-align: center; padding: 2rem;">Chargement...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cases Tab -->
+        <div id="cases-tab" class="tab-content">
+            <div class="section-green">
+                <h2>Base de Jurisprudence</h2>
+                <div id="cases-list">
+                    <p style="color: #6b7280; text-align: center; padding: 2rem;">Chargement...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Batch Import Tab -->
+        <div id="batch-import-tab" class="tab-content">
+            <div class="card">
+                <h2>Importation en Masse de PDFs</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Importez jusqu'à 200 PDFs à la fois. Les fichiers seront traités par lots pour éviter les timeout.
+                </p>
+                
+                <div class="section-blue">
+                    <h3>Sélectionner les PDFs</h3>
+                    <input type="file" id="batch-files" accept=".pdf" multiple class="input-field">
+                    <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;" id="file-count">
+                        Aucun fichier sélectionné
+                    </p>
+                    <button onclick="startBatchUpload()" class="btn-primary mt-2" id="upload-btn">
+                        Uploader les fichiers
+                    </button>
+                </div>
+                
+                <div id="batch-progress" style="display: none;" class="mt-4">
+                    <div class="batch-status">
+                        <h3>Progression de l'importation</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+                        </div>
+                        <p id="batch-status-text" style="margin-top: 1rem;">En attente...</p>
+                        <div style="margin-top: 1rem;">
+                            <strong>Succès:</strong> <span id="success-count">0</span> | 
+                            <strong>Erreurs:</strong> <span id="error-count">0</span>
+                        </div>
+                    </div>
+                    
+                    <div id="error-details" style="display: none;" class="mt-4">
+                        <h4>Détails des erreurs:</h4>
+                        <div id="error-list" style="max-height: 300px; overflow-y: auto; background: #fff; padding: 1rem; border-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Single PDF Import Tab -->
+        <div id="single-pdf-tab" class="tab-content">
+            <div class="card">
+                <h2>Import PDF avec extraction automatique</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Importez un PDF et le système extraira automatiquement tous les champs selon la structure standard.
+                </p>
+                
+                <div class="section-violet">
+                    <input type="file" id="single-pdf-file" accept=".pdf" class="input-field">
+                    <button onclick="importSinglePDF()" class="btn-primary mt-2">Importer et Extraire</button>
+                </div>
+                
+                <div id="extraction-preview" style="display: none;" class="mt-4">
+                    <h3>Données extraites (Vérifiez avant de sauvegarder)</h3>
+                    <div id="extracted-data" class="card"></div>
+                    <button onclick="saveExtractedData()" class="btn-primary mt-2">Confirmer et Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Case Tab -->
+        <div id="add-case-tab" class="tab-content">
+            <div class="card">
+                <h2>Ajouter un cas de jurisprudence</h2>
+                <form id="add-case-form">
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Référence *</label>
+                            <input type="text" id="ref" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de décision</label>
+                            <input type="date" id="date_decision" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Titre *</label>
+                        <input type="text" id="titre" class="input-field" required>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Juridiction</label>
+                            <input type="text" id="juridiction" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pays/Ville</label>
+                            <input type="text" id="pays_ville" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-3">
+                        <div class="form-group">
+                            <label class="form-label">N° de décision</label>
+                            <input type="text" id="numero_decision" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">N° de dossier</label>
+                            <input type="text" id="numero_dossier" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type de décision</label>
+                            <input type="text" id="type_decision" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Chambre</label>
+                            <input type="text" id="chambre" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Source</label>
+                            <input type="text" id="source" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Thème</label>
+                        <textarea id="theme" class="input-field" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Mots-clés (séparés par des virgules)</label>
+                        <textarea id="mots_cles" class="input-field" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Base légale</label>
+                        <textarea id="base_legale" class="input-field" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Résumé en français</label>
+                        <textarea id="resume_francais" class="input-field" rows="5"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Résumé en arabe</label>
+                        <textarea id="resume_arabe" class="input-field" rows="5" dir="rtl"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Texte intégral</label>
+                        <textarea id="texte_integral" class="input-field" rows="8"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Ajouter le cas</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/admin_new.js"></script>
+</body>
+</html>

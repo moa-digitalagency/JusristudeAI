@@ -5,20 +5,69 @@ class JurisprudenceCase(db.Model):
     __tablename__ = 'jurisprudence_cases'
     
     id = db.Column(db.Integer, primary_key=True)
-    case_number = db.Column(db.String(100), unique=True, nullable=False, index=True)
-    title = db.Column(db.Text, nullable=False)
-    description_encrypted = db.Column(db.Text, nullable=False)
-    facts_encrypted = db.Column(db.Text, nullable=False)
-    decision_encrypted = db.Column(db.Text, nullable=False)
-    court = db.Column(db.String(200), nullable=False)
-    date_decision = db.Column(db.Date, nullable=False)
-    category = db.Column(db.String(100), nullable=False)
-    keywords = db.Column(db.Text)
+    
+    ref = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    titre = db.Column(db.Text, nullable=False)
+    
+    juridiction = db.Column(db.String(200))
+    pays_ville = db.Column(db.String(200))
+    numero_decision = db.Column(db.String(100))
+    date_decision = db.Column(db.Date)
+    numero_dossier = db.Column(db.String(100))
+    type_decision = db.Column(db.String(100))
+    chambre = db.Column(db.String(100))
+    
+    theme = db.Column(db.Text)
+    mots_cles = db.Column(db.Text)
+    
+    base_legale = db.Column(db.Text)
+    source = db.Column(db.String(200))
+    
+    resume_francais_encrypted = db.Column(db.Text)
+    resume_arabe_encrypted = db.Column(db.Text)
+    texte_integral_encrypted = db.Column(db.Text)
+    
+    pdf_file_path = db.Column(db.String(500))
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
-        return f'<JurisprudenceCase {self.case_number}>'
+        return f'<JurisprudenceCase {self.ref}>'
+    
+    def to_dict(self, decrypt=False):
+        from backend.utils.encryption import encryption_service
+        
+        data = {
+            'id': self.id,
+            'ref': self.ref,
+            'titre': self.titre,
+            'juridiction': self.juridiction,
+            'pays_ville': self.pays_ville,
+            'numero_decision': self.numero_decision,
+            'date_decision': self.date_decision.isoformat() if self.date_decision else None,
+            'numero_dossier': self.numero_dossier,
+            'type_decision': self.type_decision,
+            'chambre': self.chambre,
+            'theme': self.theme,
+            'mots_cles': self.mots_cles,
+            'base_legale': self.base_legale,
+            'source': self.source,
+            'pdf_file_path': self.pdf_file_path,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+        
+        if decrypt:
+            if self.resume_francais_encrypted:
+                data['resume_francais'] = encryption_service.decrypt(self.resume_francais_encrypted)
+            if self.resume_arabe_encrypted:
+                data['resume_arabe'] = encryption_service.decrypt(self.resume_arabe_encrypted)
+            if self.texte_integral_encrypted:
+                data['texte_integral'] = encryption_service.decrypt(self.texte_integral_encrypted)
+        
+        return data
 
 class SearchHistory(db.Model):
     __tablename__ = 'search_history'

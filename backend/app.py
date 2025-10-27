@@ -6,6 +6,7 @@ from backend.config import Config
 from backend.models.user import db, User
 from backend.routes.auth import auth_bp, bcrypt
 from backend.routes.cases import cases_bp
+from backend.routes.batch_import import batch_import_bp
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
@@ -34,6 +35,7 @@ def load_user(user_id):
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(cases_bp, url_prefix='/api')
+app.register_blueprint(batch_import_bp, url_prefix='/api')
 
 @app.route('/')
 def index():
