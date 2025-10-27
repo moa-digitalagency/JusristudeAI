@@ -59,12 +59,18 @@ class PDFExtractor:
         }
     
     def extract_text_from_pdf(self, pdf_file) -> str:
-        """Extrait tout le texte d'un fichier PDF"""
+        """Extrait tout le texte d'un fichier PDF et le nettoie"""
         try:
             pdf_reader = PyPDF2.PdfReader(pdf_file)
             text = ''
             for page in pdf_reader.pages:
                 text += page.extract_text() + '\n'
+            
+            # Nettoyage de base lors de l'extraction
+            # Enlever les caractères de remplacement Unicode
+            text = re.sub(r'[\u25A0-\u25FF\uFFFD\uFFFE\uFFFF]', '', text)
+            text = re.sub(r'[\u2610-\u2612]', '', text)
+            
             return text
         except Exception as e:
             raise Exception(f"Erreur lors de l'extraction du texte PDF: {str(e)}")
@@ -106,26 +112,51 @@ class PDFExtractor:
             return text
         
         # Enlever les caractères de remplacement Unicode (□, �, etc.)
-        text = re.sub(r'[\u25A0-\u25FF\uFFFD]', '', text)
+        # Inclure plus de plages de caractères problématiques
+        text = re.sub(r'[\u25A0-\u25FF\uFFFD\uFFFE\uFFFF]', '', text)
+        text = re.sub(r'[\u2610-\u2612]', '', text)  # Cases à cocher
         
-        # Enlever les pieds de page en français avec numérotation X/X à la fin
-        # Pattern spécifique: phrase française + numérotation
-        text = re.sub(r'[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s:,\.\-\(\)]{20,}\s+\d+/\d+\s*', ' ', text)
+        # Enlever les pieds de page avec pattern: "Titre (CA. com. Ville ANNÉE) X/X"
+        # Ce pattern capture les pieds de page complets
+        text = re.sub(r'.+?\([A-Z][A-Za-z\.]+\s+[a-z]+\.\s+[A-Za-zÀ-ÿ]+\s+\d{4}\)\s*\d+/\d+', '', text)
         
-        # Enlever uniquement les lignes qui sont des pieds de page évidents
+        # Traiter ligne par ligne pour un meilleur contrôle
         lines = text.split('\n')
         cleaned_lines = []
+        
         for line in lines:
-            # Ignore si c'est clairement un pied de page français (ligne longue en français avec X/X à la fin)
-            if re.search(r'^[A-Za-zÀ-ÿ\s:,\.\-\(\)]{30,}\d+/\d+\s*$', line.strip()):
+            line = line.strip()
+            
+            # Ignorer les lignes vides
+            if not line:
                 continue
+            
+            # Ignorer les pieds de page (ligne française longue se terminant par X/X)
+            if re.search(r'\d+/\d+\s*$', line) and len(re.findall(r'[A-Za-zÀ-ÿ]', line)) > 20:
+                continue
+            
+            # Ignorer les lignes qui sont principalement des caractères de remplacement
+            if line.count('�') > len(line) * 0.3:
+                continue
+                
             cleaned_lines.append(line)
         
         text = '\n'.join(cleaned_lines)
         
-        # Nettoyer les espaces multiples mais garder la structure
-        text = re.sub(r' +', ' ', text)
+        # Nettoyer les caractères spéciaux répétés
+        text = re.sub(r'�+', '', text)
+        text = re.sub(r'□+', '', text)
+        
+        # Organiser en paragraphes propres
+        # Remplacer multiples sauts de ligne par double saut
         text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        
+        # Nettoyer les espaces multiples
+        text = re.sub(r' +', ' ', text)
+        
+        # Enlever espaces en début/fin de chaque ligne
+        lines = [line.strip() for line in text.split('\n')]
+        text = '\n'.join(lines)
         
         return text.strip()
     
