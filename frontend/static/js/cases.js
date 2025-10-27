@@ -392,24 +392,84 @@ async function startBatchImport() {
     
     let successCount = 0;
     let errorCount = 0;
+    let errorsList = [];
+    
+    const resultsDiv = document.createElement('div');
+    resultsDiv.id = 'import-results';
+    resultsDiv.style.marginTop = '1rem';
+    resultsDiv.style.maxHeight = '400px';
+    resultsDiv.style.overflowY = 'auto';
+    document.getElementById('batch-progress').appendChild(resultsDiv);
     
     for (let i = 0; i < files.length; i++) {
+        const fileName = files[i].name;
         const formData = new FormData();
-        formData.append('pdf', files[i]);
+        formData.append('file', files[i]);
+        
+        const fileStatus = document.createElement('div');
+        fileStatus.style.padding = '0.75rem';
+        fileStatus.style.marginBottom = '0.5rem';
+        fileStatus.style.borderRadius = '8px';
+        fileStatus.style.border = '2px solid #e5e7eb';
+        fileStatus.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-spinner fa-spin" style="color: #3b82f6;"></i>
+                <strong>${i + 1}. ${fileName}</strong>
+                <span style="margin-left: auto; color: #6b7280;">En cours...</span>
+            </div>
+        `;
+        resultsDiv.appendChild(fileStatus);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
         
         try {
-            const response = await fetch('/api/batch-import/extract-pdf', {
+            const response = await fetch('/api/import/single-pdf', {
                 method: 'POST',
                 body: formData
             });
             
+            const result = await response.json();
+            
             if (response.ok) {
                 successCount++;
+                fileStatus.style.border = '2px solid #10b981';
+                fileStatus.style.background = '#ecfdf5';
+                fileStatus.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        <strong>${i + 1}. ${fileName}</strong>
+                        <span style="margin-left: auto; color: #059669;">✓ Importé (Ref: ${result.case?.ref || 'N/A'})</span>
+                    </div>
+                `;
             } else {
                 errorCount++;
+                const errorMsg = result.error || 'Erreur inconnue';
+                errorsList.push({file: fileName, error: errorMsg});
+                fileStatus.style.border = '2px solid #ef4444';
+                fileStatus.style.background = '#fef2f2';
+                fileStatus.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                        <strong>${i + 1}. ${fileName}</strong>
+                    </div>
+                    <div style="margin-left: 1.5rem; color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem;">
+                        ${errorMsg}
+                    </div>
+                `;
             }
         } catch (error) {
             errorCount++;
+            errorsList.push({file: fileName, error: error.message});
+            fileStatus.style.border = '2px solid #ef4444';
+            fileStatus.style.background = '#fef2f2';
+            fileStatus.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                    <strong>${i + 1}. ${fileName}</strong>
+                </div>
+                <div style="margin-left: 1.5rem; color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem;">
+                    Erreur réseau: ${error.message}
+                </div>
+            `;
         }
         
         const progress = Math.round(((i + 1) / files.length) * 100);
@@ -418,12 +478,14 @@ async function startBatchImport() {
         document.getElementById('success-count').textContent = successCount;
         document.getElementById('error-count').textContent = errorCount;
         document.getElementById('pending-count').textContent = files.length - (successCount + errorCount);
-        document.getElementById('batch-status-text').textContent = `Traitement de ${i + 1}/${files.length}: ${files[i].name}`;
+        document.getElementById('batch-status-text').textContent = `Traitement de ${i + 1}/${files.length}...`;
     }
     
     document.getElementById('batch-status-text').textContent = 'Import terminé!';
     document.getElementById('start-import-btn').disabled = false;
-    showAlert(`Import terminé: ${successCount} succès, ${errorCount} erreurs`, 'success');
+    
+    const alertType = errorCount === 0 ? 'success' : errorCount === files.length ? 'error' : 'warning';
+    showAlert(`Import terminé: ${successCount} succès, ${errorCount} erreurs`, alertType);
     
     loadCases(1);
     loadStats();
