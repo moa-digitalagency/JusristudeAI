@@ -19,6 +19,33 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def truncate_field(value, max_length):
+    """Tronque une valeur à la longueur maximale si nécessaire"""
+    if value and isinstance(value, str) and len(value) > max_length:
+        return value[:max_length]
+    return value
+
+def prepare_case_data(extracted_data):
+    """Prépare et valide les données extraites pour l'insertion en base"""
+    return {
+        'ref': truncate_field(extracted_data.get('ref'), 50),
+        'titre': extracted_data.get('titre') or f"Document {extracted_data.get('ref', 'sans-ref')}",
+        'juridiction': truncate_field(extracted_data.get('juridiction'), 200),
+        'pays_ville': truncate_field(extracted_data.get('pays_ville'), 200),
+        'numero_decision': truncate_field(extracted_data.get('numero_decision'), 100),
+        'date_decision': extracted_data.get('date_decision'),
+        'numero_dossier': truncate_field(extracted_data.get('numero_dossier'), 100),
+        'type_decision': truncate_field(extracted_data.get('type_decision'), 100),
+        'chambre': truncate_field(extracted_data.get('chambre'), 100),
+        'theme': extracted_data.get('theme'),
+        'mots_cles': extracted_data.get('mots_cles'),
+        'base_legale': extracted_data.get('base_legale'),
+        'source': truncate_field(extracted_data.get('source'), 200),
+        'resume_francais': extracted_data.get('resume_francais'),
+        'resume_arabe': extracted_data.get('resume_arabe'),
+        'texte_integral': extracted_data.get('texte_integral')
+    }
+
 @batch_import_bp.route('/batch/upload', methods=['POST'])
 @login_required
 def upload_batch():
@@ -115,32 +142,34 @@ def process_batch():
                 results['processed'] += 1
                 continue
             
-            existing_case = JurisprudenceCase.query.filter_by(ref=extracted_data['ref']).first()
+            prepared_data = prepare_case_data(extracted_data)
+            
+            existing_case = JurisprudenceCase.query.filter_by(ref=prepared_data['ref']).first()
             if existing_case:
                 results['errors'].append({
                     'filename': filename,
-                    'error': f'Cas avec ref {extracted_data["ref"]} déjà existant'
+                    'error': f'Cas avec ref {prepared_data["ref"]} déjà existant'
                 })
                 results['processed'] += 1
                 continue
             
             new_case = JurisprudenceCase(
-                ref=extracted_data['ref'],
-                titre=extracted_data.get('titre') or f"Document {extracted_data['ref']}",
-                juridiction=extracted_data.get('juridiction'),
-                pays_ville=extracted_data.get('pays_ville'),
-                numero_decision=extracted_data.get('numero_decision'),
-                date_decision=extracted_data.get('date_decision'),
-                numero_dossier=extracted_data.get('numero_dossier'),
-                type_decision=extracted_data.get('type_decision'),
-                chambre=extracted_data.get('chambre'),
-                theme=extracted_data.get('theme'),
-                mots_cles=extracted_data.get('mots_cles'),
-                base_legale=extracted_data.get('base_legale'),
-                source=extracted_data.get('source'),
-                resume_francais_encrypted=encryption_service.encrypt(extracted_data.get('resume_francais', '')) if extracted_data.get('resume_francais') else None,
-                resume_arabe_encrypted=encryption_service.encrypt(extracted_data.get('resume_arabe', '')) if extracted_data.get('resume_arabe') else None,
-                texte_integral_encrypted=encryption_service.encrypt(extracted_data.get('texte_integral', '')) if extracted_data.get('texte_integral') else None,
+                ref=prepared_data['ref'],
+                titre=prepared_data['titre'],
+                juridiction=prepared_data['juridiction'],
+                pays_ville=prepared_data['pays_ville'],
+                numero_decision=prepared_data['numero_decision'],
+                date_decision=prepared_data['date_decision'],
+                numero_dossier=prepared_data['numero_dossier'],
+                type_decision=prepared_data['type_decision'],
+                chambre=prepared_data['chambre'],
+                theme=prepared_data['theme'],
+                mots_cles=prepared_data['mots_cles'],
+                base_legale=prepared_data['base_legale'],
+                source=prepared_data['source'],
+                resume_francais_encrypted=encryption_service.encrypt(prepared_data['resume_francais']) if prepared_data.get('resume_francais') else None,
+                resume_arabe_encrypted=encryption_service.encrypt(prepared_data['resume_arabe']) if prepared_data.get('resume_arabe') else None,
+                texte_integral_encrypted=encryption_service.encrypt(prepared_data['texte_integral']) if prepared_data.get('texte_integral') else None,
                 pdf_file_path=filepath,
                 created_by=current_user.id
             )
@@ -240,10 +269,12 @@ def import_single_pdf():
                 'extracted_data': extracted_data
             }), 400
         
-        existing_case = JurisprudenceCase.query.filter_by(ref=extracted_data['ref']).first()
+        prepared_data = prepare_case_data(extracted_data)
+        
+        existing_case = JurisprudenceCase.query.filter_by(ref=prepared_data['ref']).first()
         if existing_case:
             return jsonify({
-                'error': f'Un cas avec la référence {extracted_data["ref"]} existe déjà'
+                'error': f'Un cas avec la référence {prepared_data["ref"]} existe déjà'
             }), 409
         
         filename = secure_filename(file.filename or 'document.pdf')
@@ -255,22 +286,22 @@ def import_single_pdf():
         file.save(filepath)
         
         new_case = JurisprudenceCase(
-            ref=extracted_data['ref'],
-            titre=extracted_data.get('titre') or f"Document {extracted_data['ref']}",
-            juridiction=extracted_data.get('juridiction'),
-            pays_ville=extracted_data.get('pays_ville'),
-            numero_decision=extracted_data.get('numero_decision'),
-            date_decision=extracted_data.get('date_decision'),
-            numero_dossier=extracted_data.get('numero_dossier'),
-            type_decision=extracted_data.get('type_decision'),
-            chambre=extracted_data.get('chambre'),
-            theme=extracted_data.get('theme'),
-            mots_cles=extracted_data.get('mots_cles'),
-            base_legale=extracted_data.get('base_legale'),
-            source=extracted_data.get('source'),
-            resume_francais_encrypted=encryption_service.encrypt(extracted_data.get('resume_francais', '')) if extracted_data.get('resume_francais') else None,
-            resume_arabe_encrypted=encryption_service.encrypt(extracted_data.get('resume_arabe', '')) if extracted_data.get('resume_arabe') else None,
-            texte_integral_encrypted=encryption_service.encrypt(extracted_data.get('texte_integral', '')) if extracted_data.get('texte_integral') else None,
+            ref=prepared_data['ref'],
+            titre=prepared_data['titre'],
+            juridiction=prepared_data['juridiction'],
+            pays_ville=prepared_data['pays_ville'],
+            numero_decision=prepared_data['numero_decision'],
+            date_decision=prepared_data['date_decision'],
+            numero_dossier=prepared_data['numero_dossier'],
+            type_decision=prepared_data['type_decision'],
+            chambre=prepared_data['chambre'],
+            theme=prepared_data['theme'],
+            mots_cles=prepared_data['mots_cles'],
+            base_legale=prepared_data['base_legale'],
+            source=prepared_data['source'],
+            resume_francais_encrypted=encryption_service.encrypt(prepared_data['resume_francais']) if prepared_data.get('resume_francais') else None,
+            resume_arabe_encrypted=encryption_service.encrypt(prepared_data['resume_arabe']) if prepared_data.get('resume_arabe') else None,
+            texte_integral_encrypted=encryption_service.encrypt(prepared_data['texte_integral']) if prepared_data.get('texte_integral') else None,
             pdf_file_path=filepath,
             created_by=current_user.id
         )
