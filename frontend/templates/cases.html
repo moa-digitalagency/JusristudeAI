@@ -107,49 +107,6 @@
             display: block;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-        
-        .modal-content {
-            background: white;
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 2rem;
-            border-radius: 1rem;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: var(--red-500);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .modal-close:hover {
-            background: #dc2626;
-            transform: scale(1.1);
-        }
-        
         .progress-bar {
             width: 100%;
             height: 30px;
@@ -498,13 +455,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <div id="caseModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal()">×</button>
-            <div id="caseDetails"></div>
         </div>
     </div>
     

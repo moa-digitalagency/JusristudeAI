@@ -191,86 +191,8 @@ function displayPagination(currentPage, totalPages) {
     pagination.innerHTML = html;
 }
 
-async function viewCase(caseId) {
-    try {
-        const response = await fetch(`/api/cases/${caseId}`);
-        const caseData = await response.json();
-        
-        const detailsHTML = `
-            <h2 style="color: #3b82f6; margin-bottom: 1.5rem;">${caseData.titre}</h2>
-            
-            <div class="section-blue" style="margin-bottom: 1rem;">
-                <h3>Identification</h3>
-                <p><strong>Référence:</strong> ${caseData.ref}</p>
-                <p><strong>Juridiction:</strong> ${caseData.juridiction || 'N/A'}</p>
-                <p><strong>Pays/Ville:</strong> ${caseData.pays_ville || 'N/A'}</p>
-                <p><strong>N° de décision:</strong> ${caseData.numero_decision || 'N/A'}</p>
-                <p><strong>Date de décision:</strong> ${caseData.date_decision ? formatDate(caseData.date_decision) : 'N/A'}</p>
-                <p><strong>N° de dossier:</strong> ${caseData.numero_dossier || 'N/A'}</p>
-                <p><strong>Type de décision:</strong> ${caseData.type_decision || 'N/A'}</p>
-                <p><strong>Chambre:</strong> ${caseData.chambre || 'N/A'}</p>
-            </div>
-            
-            ${caseData.theme ? `
-            <div class="section-green" style="margin-bottom: 1rem;">
-                <h3>Thème</h3>
-                <p>${caseData.theme}</p>
-            </div>
-            ` : ''}
-            
-            ${caseData.mots_cles ? `
-            <div class="section-violet" style="margin-bottom: 1rem;">
-                <h3>Mots clés</h3>
-                <p>${caseData.mots_cles}</p>
-            </div>
-            ` : ''}
-            
-            ${caseData.base_legale ? `
-            <div class="section-cyan" style="margin-bottom: 1rem;">
-                <h3>Base légale</h3>
-                <p>${caseData.base_legale}</p>
-            </div>
-            ` : ''}
-            
-            ${caseData.resume_francais ? `
-            <div class="section-blue" style="margin-bottom: 1rem;">
-                <h3>Résumé en français</h3>
-                <p>${caseData.resume_francais}</p>
-            </div>
-            ` : ''}
-            
-            ${caseData.resume_arabe ? `
-            <div class="section-green" style="margin-bottom: 1rem;">
-                <h3>Résumé en arabe</h3>
-                <p style="direction: rtl; text-align: right;">${caseData.resume_arabe}</p>
-            </div>
-            ` : ''}
-            
-            ${caseData.texte_integral ? `
-            <div class="section-violet">
-                <h3>Texte intégral</h3>
-                <p style="white-space: pre-wrap;">${caseData.texte_integral}</p>
-            </div>
-            ` : ''}
-        `;
-        
-        document.getElementById('caseDetails').innerHTML = detailsHTML;
-        document.getElementById('caseModal').style.display = 'block';
-    } catch (error) {
-        console.error('Erreur:', error);
-        showAlert('Erreur lors du chargement des détails du cas', 'error');
-    }
-}
-
-function closeModal() {
-    document.getElementById('caseModal').style.display = 'none';
-}
-
-window.onclick = function(event) {
-    const modal = document.getElementById('caseModal');
-    if (event.target === modal) {
-        closeModal();
-    }
+function viewCase(caseId) {
+    window.location.href = `/case/${caseId}`;
 }
 
 document.getElementById('add-case-form')?.addEventListener('submit', async (e) => {
