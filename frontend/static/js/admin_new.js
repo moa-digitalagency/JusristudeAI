@@ -365,6 +365,19 @@ async function startBatchImport() {
             credentials: 'include'
         });
         
+        // Vérifier si on reçoit du JSON ou du HTML
+        const contentType = uploadResponse.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            if (uploadResponse.status === 401) {
+                showAlert('Session expirée. Veuillez vous reconnecter.', 'error');
+                setTimeout(() => window.location.href = '/', 2000);
+            } else {
+                showAlert('Erreur serveur: la réponse n\'est pas au format JSON', 'error');
+            }
+            document.getElementById('start-import-btn').disabled = false;
+            return;
+        }
+        
         const uploadData = await uploadResponse.json();
         
         if (!uploadResponse.ok) {
@@ -379,8 +392,10 @@ async function startBatchImport() {
         await processFilesOneByOne(currentBatchId, selectedFiles.length);
         
     } catch (error) {
+        console.error('Erreur détaillée:', error);
         showAlert('Erreur lors de l\'importation: ' + error.message, 'error');
         document.getElementById('start-import-btn').disabled = false;
+        document.getElementById('batch-progress').style.display = 'none';
     }
 }
 
@@ -407,6 +422,19 @@ async function processFilesOneByOne(batchId, totalFiles) {
                 credentials: 'include'
             });
             
+            // Vérifier si on reçoit du JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                if (response.status === 401) {
+                    showAlert('Session expirée. Veuillez vous reconnecter.', 'error');
+                    setTimeout(() => window.location.href = '/', 2000);
+                    return;
+                }
+                errorCount++;
+                updateFileStatus(i, 'error', 'Erreur serveur');
+                continue;
+            }
+            
             const data = await response.json();
             
             if (data.success > 0) {
@@ -418,6 +446,7 @@ async function processFilesOneByOne(batchId, totalFiles) {
             }
             
         } catch (error) {
+            console.error(`Erreur pour le fichier ${selectedFiles[i].name}:`, error);
             errorCount++;
             updateFileStatus(i, 'error', error.message);
         }
