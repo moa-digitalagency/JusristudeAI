@@ -11,7 +11,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 2rem;
-            border-radius: 1rem;
+            border-radius: 0.75rem;
             margin-bottom: 2rem;
         }
         
@@ -20,15 +20,43 @@
             padding: 1.5rem;
             border-radius: 0.75rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
+            border: 3px dotted;
+        }
+        
+        .case-section.blue {
+            border-color: #3b82f6;
+        }
+        
+        .case-section.green {
+            border-color: #10b981;
+        }
+        
+        .case-section.violet {
+            border-color: #8b5cf6;
+        }
+        
+        .case-section.cyan {
+            border-color: #06b6d4;
+        }
+        
+        .case-section.orange {
+            border-color: #f59e0b;
         }
         
         .case-section h3 {
-            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e5e7eb;
+            font-size: 1.1rem;
+            font-weight: 600;
         }
+        
+        .case-section.blue h3 { color: #3b82f6; }
+        .case-section.green h3 { color: #10b981; }
+        .case-section.violet h3 { color: #8b5cf6; }
+        .case-section.cyan h3 { color: #06b6d4; }
+        .case-section.orange h3 { color: #f59e0b; }
         
         .info-grid {
             display: grid;
@@ -38,31 +66,35 @@
         }
         
         .info-item {
-            padding: 0.75rem;
-            background: #f9fafb;
-            border-radius: 0.5rem;
+            padding: 0;
         }
         
         .info-label {
             font-weight: 600;
             color: #6b7280;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             margin-bottom: 0.25rem;
         }
         
         .info-value {
             color: #111827;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         
         .text-content {
             background: #f9fafb;
             padding: 1.5rem;
             border-radius: 0.5rem;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid;
             line-height: 1.8;
             white-space: pre-wrap;
         }
+        
+        .case-section.blue .text-content { border-left-color: #3b82f6; }
+        .case-section.green .text-content { border-left-color: #10b981; }
+        .case-section.violet .text-content { border-left-color: #8b5cf6; }
+        .case-section.cyan .text-content { border-left-color: #06b6d4; }
+        .case-section.orange .text-content { border-left-color: #f59e0b; }
         
         .loading-spinner {
             text-align: center;
@@ -200,7 +232,7 @@
                     </p>
                 </div>
                 
-                <div class="case-section">
+                <div class="case-section blue">
                     <h3><i class="fas fa-info-circle"></i> Informations générales</h3>
                     <div class="info-grid">
                         ${caseData.juridiction ? `
@@ -257,7 +289,7 @@
             
             if (caseData.theme || caseData.mots_cles || caseData.base_legale) {
                 html += `
-                    <div class="case-section">
+                    <div class="case-section violet">
                         <h3><i class="fas fa-tags"></i> Classification</h3>
                         <div class="info-grid">
                             ${caseData.theme ? `
@@ -285,7 +317,7 @@
             
             if (caseData.resume_francais) {
                 html += `
-                    <div class="case-section">
+                    <div class="case-section green">
                         <h3><i class="fas fa-file-text"></i> Résumé en français</h3>
                         <div class="text-content">${caseData.resume_francais}</div>
                     </div>
@@ -294,7 +326,7 @@
             
             if (caseData.resume_arabe) {
                 html += `
-                    <div class="case-section">
+                    <div class="case-section cyan">
                         <h3><i class="fas fa-file-text"></i> الملخص بالعربية</h3>
                         <div class="text-content" dir="rtl" style="text-align: right;">${caseData.resume_arabe}</div>
                     </div>
@@ -303,7 +335,7 @@
             
             if (caseData.texte_integral) {
                 html += `
-                    <div class="case-section">
+                    <div class="case-section orange">
                         <h3><i class="fas fa-book"></i> Texte intégral</h3>
                         <div class="text-content">${caseData.texte_integral}</div>
                     </div>
@@ -312,7 +344,7 @@
             
             if (caseData.pdf_file_path) {
                 html += `
-                    <div class="case-section">
+                    <div class="case-section blue">
                         <h3><i class="fas fa-file-pdf"></i> Document PDF</h3>
                         <a href="${caseData.pdf_file_path}" target="_blank" class="btn-primary">
                             <i class="fas fa-download"></i> Télécharger le PDF
