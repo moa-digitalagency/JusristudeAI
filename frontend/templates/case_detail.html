@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du cas - Base de Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .case-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .case-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .case-section h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            color: #111827;
+            font-size: 1rem;
+        }
+        
+        .text-content {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #667eea;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-balance-scale"></i> Base de Jurisprudence
+            </a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+                <a href="/search" class="nav-link">
+                    <i class="fas fa-search"></i> Recherche IA
+                </a>
+                <a href="/cases" class="nav-link active">
+                    <i class="fas fa-folder"></i> Cas
+                </a>
+                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">
+                    <i class="fas fa-cog"></i> Administration
+                </a>
+                <button id="logout-btn" class="btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        
+        <div id="loading" class="loading-spinner">
+            <div class="spinner"></div>
+            <p style="color: #6b7280;">Chargement des détails du cas...</p>
+        </div>
+        
+        <div id="case-content" style="display: none;">
+            <!-- Le contenu sera inséré ici par JavaScript -->
+        </div>
+        
+        <div id="error-message" style="display: none;">
+            <div class="alert alert-error">
+                <strong>Erreur:</strong> <span id="error-text"></span>
+            </div>
+            <a href="/cases" class="btn-primary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste des cas
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        const caseId = {{ case_id }};
+        
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (data.user.is_admin) {
+                    document.getElementById('admin-link').style.display = 'inline-block';
+                }
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        async function loadCaseDetails() {
+            try {
+                const response = await fetch(`/api/cases/${caseId}`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Cas non trouvé');
+                }
+                
+                const caseData = await response.json();
+                displayCase(caseData);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('case-content').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-text').textContent = error.message;
+            }
+        }
+        
+        function displayCase(caseData) {
+            const content = document.getElementById('case-content');
+            
+            let html = `
+                <div class="case-header">
+                    <h1 style="margin: 0 0 0.5rem 0;">
+                        <i class="fas fa-file-alt"></i> ${caseData.titre || 'Sans titre'}
+                    </h1>
+                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">
+                        Référence: <strong>${caseData.ref}</strong>
+                    </p>
+                </div>
+                
+                <div class="case-section">
+                    <h3><i class="fas fa-info-circle"></i> Informations générales</h3>
+                    <div class="info-grid">
+                        ${caseData.juridiction ? `
+                            <div class="info-item">
+                                <div class="info-label">Juridiction</div>
+                                <div class="info-value">${caseData.juridiction}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.date_decision ? `
+                            <div class="info-item">
+                                <div class="info-label">Date de décision</div>
+                                <div class="info-value">${caseData.date_decision}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.numero_decision ? `
+                            <div class="info-item">
+                                <div class="info-label">Numéro de décision</div>
+                                <div class="info-value">${caseData.numero_decision}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.numero_dossier ? `
+                            <div class="info-item">
+                                <div class="info-label">Numéro de dossier</div>
+                                <div class="info-value">${caseData.numero_dossier}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.type_decision ? `
+                            <div class="info-item">
+                                <div class="info-label">Type de décision</div>
+                                <div class="info-value">${caseData.type_decision}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.chambre ? `
+                            <div class="info-item">
+                                <div class="info-label">Chambre</div>
+                                <div class="info-value">${caseData.chambre}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.pays_ville ? `
+                            <div class="info-item">
+                                <div class="info-label">Pays/Ville</div>
+                                <div class="info-value">${caseData.pays_ville}</div>
+                            </div>
+                        ` : ''}
+                        ${caseData.source ? `
+                            <div class="info-item">
+                                <div class="info-label">Source</div>
+                                <div class="info-value">${caseData.source}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            if (caseData.theme || caseData.mots_cles || caseData.base_legale) {
+                html += `
+                    <div class="case-section">
+                        <h3><i class="fas fa-tags"></i> Classification</h3>
+                        <div class="info-grid">
+                            ${caseData.theme ? `
+                                <div class="info-item">
+                                    <div class="info-label">Thème</div>
+                                    <div class="info-value">${caseData.theme}</div>
+                                </div>
+                            ` : ''}
+                            ${caseData.mots_cles ? `
+                                <div class="info-item">
+                                    <div class="info-label">Mots-clés</div>
+                                    <div class="info-value">${caseData.mots_cles}</div>
+                                </div>
+                            ` : ''}
+                            ${caseData.base_legale ? `
+                                <div class="info-item">
+                                    <div class="info-label">Base légale</div>
+                                    <div class="info-value">${caseData.base_legale}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (caseData.resume_francais) {
+                html += `
+                    <div class="case-section">
+                        <h3><i class="fas fa-file-text"></i> Résumé en français</h3>
+                        <div class="text-content">${caseData.resume_francais}</div>
+                    </div>
+                `;
+            }
+            
+            if (caseData.resume_arabe) {
+                html += `
+                    <div class="case-section">
+                        <h3><i class="fas fa-file-text"></i> الملخص بالعربية</h3>
+                        <div class="text-content" dir="rtl" style="text-align: right;">${caseData.resume_arabe}</div>
+                    </div>
+                `;
+            }
+            
+            if (caseData.texte_integral) {
+                html += `
+                    <div class="case-section">
+                        <h3><i class="fas fa-book"></i> Texte intégral</h3>
+                        <div class="text-content">${caseData.texte_integral}</div>
+                    </div>
+                `;
+            }
+            
+            if (caseData.pdf_file_path) {
+                html += `
+                    <div class="case-section">
+                        <h3><i class="fas fa-file-pdf"></i> Document PDF</h3>
+                        <a href="${caseData.pdf_file_path}" target="_blank" class="btn-primary">
+                            <i class="fas fa-download"></i> Télécharger le PDF
+                        </a>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        });
+        
+        loadUserInfo();
+        loadCaseDetails();
+    </script>
+</body>
+</html>

@@ -72,6 +72,10 @@ def admin_page():
 def cases_page():
     return render_template('cases.html')
 
+@app.route('/case/<int:case_id>')
+def case_detail_page(case_id):
+    return render_template('case_detail.html', case_id=case_id)
+
 @app.route('/api/csrf-token', methods=['GET'])
 def get_csrf_token():
     from flask_wtf.csrf import generate_csrf

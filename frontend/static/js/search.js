@@ -179,7 +179,7 @@ function displayResults(data) {
                             </div>
                         ` : ''}
                         <div style="margin-top: 0.75rem;">
-                            <a href="/cases#case-${caseItem.id}" class="btn btn-sm btn-primary">
+                            <a href="/case/${caseItem.id}" class="btn btn-sm btn-primary">
                                 Voir le cas complet
                             </a>
                         </div>
