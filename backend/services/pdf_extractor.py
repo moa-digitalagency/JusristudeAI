@@ -13,7 +13,9 @@ class PDFExtractor:
                 r'R[ée]f[ée]rence\s*:?\s*(\d+)'
             ],
             'titre': [
-                r'Titre\s*:?\s*(.+?)(?:\n\n|Ref\s*:)',
+                r'Titre\s*:?\s*(.+?)(?:\n\n|Ref\s*:|Juridiction|$)',
+                r'Th[èe]me\s*:?\s*(.+?)(?:\n\n|Mots|$)',
+                r'^(.+?)(?=\n\s*Ref\s*:)',
             ],
             'juridiction': [
                 r'Juridiction\s*:?\s*(.+?)(?:\n|$)',
@@ -174,6 +176,9 @@ class PDFExtractor:
                 'resume_arabe': self.extract_resume_arabe(text),
                 'texte_integral': self.extract_texte_integral(text),
             }
+            
+            if not extracted_data['titre'] and extracted_data['theme']:
+                extracted_data['titre'] = extracted_data['theme']
             
             date_str = self.extract_field(text, 'date_decision')
             parsed_date = self.parse_date(date_str) if date_str else None

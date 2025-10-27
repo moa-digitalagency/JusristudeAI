@@ -126,7 +126,7 @@ def process_batch():
             
             new_case = JurisprudenceCase(
                 ref=extracted_data['ref'],
-                titre=extracted_data.get('titre', 'Sans titre'),
+                titre=extracted_data.get('titre') or f"Document {extracted_data['ref']}",
                 juridiction=extracted_data.get('juridiction'),
                 pays_ville=extracted_data.get('pays_ville'),
                 numero_decision=extracted_data.get('numero_decision'),
@@ -256,7 +256,7 @@ def import_single_pdf():
         
         new_case = JurisprudenceCase(
             ref=extracted_data['ref'],
-            titre=extracted_data.get('titre', 'Sans titre'),
+            titre=extracted_data.get('titre') or f"Document {extracted_data['ref']}",
             juridiction=extracted_data.get('juridiction'),
             pays_ville=extracted_data.get('pays_ville'),
             numero_decision=extracted_data.get('numero_decision'),
