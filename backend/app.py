@@ -21,6 +21,7 @@ CORS(app, supports_credentials=True, origins=['http://localhost:5000', 'http://1
 csrf = CSRFProtect(app)
 csrf.exempt(auth_bp)
 csrf.exempt(cases_bp)
+csrf.exempt(batch_import_bp)
 
 db.init_app(app)
 bcrypt.init_app(app)
