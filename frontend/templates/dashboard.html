@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">Jurisprudence</a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">Tableau de bord</a>
+                <a href="/search" class="nav-link">Recherche IA</a>
+                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">Administration</a>
+                <button id="logout-btn" class="btn-secondary">Déconnexion</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Tableau de bord</h1>
+        
+        <div class="grid grid-2 mb-4">
+            <div class="card section-blue">
+                <h3>Cas de jurisprudence</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: #2563eb; margin: 1rem 0;" id="total-cases">0</p>
+                <p style="color: #6b7280; font-size: 0.875rem;">Cas disponibles dans la base</p>
+            </div>
+            
+            <div class="card section-green">
+                <h3>Mes recherches</h3>
+                <p style="font-size: 2rem; font-weight: 700; color: #16a34a; margin: 1rem 0;" id="user-searches">0</p>
+                <p style="color: #6b7280; font-size: 0.875rem;">Recherches effectuées</p>
+            </div>
+        </div>
+        
+        <div class="section-violet mb-4">
+            <h2>Bienvenue <span id="user-name"></span>!</h2>
+            <p style="color: #6b7280; margin-bottom: 1rem;">
+                Utilisez notre moteur de recherche IA pour trouver des cas de jurisprudence similaires à votre affaire.
+            </p>
+            <a href="/search" class="btn-primary">Lancer une recherche</a>
+        </div>
+        
+        <div class="card">
+            <h2>Cas récents</h2>
+            <div id="recent-cases">
+                <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                    Chargement des cas...
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

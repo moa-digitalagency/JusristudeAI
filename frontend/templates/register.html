@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin-top: 3rem;">
+        <div class="card section-green">
+            <h1 class="text-center">Créer un compte</h1>
+            <p class="text-center mb-3" style="color: #6b7280;">
+                Rejoignez la plateforme de recherche juridique
+            </p>
+            
+            <div id="alert-container"></div>
+            
+            <form id="register-form">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="first_name">Prénom</label>
+                        <input type="text" id="first_name" class="input-field" placeholder="Jean" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="last_name">Nom</label>
+                        <input type="text" id="last_name" class="input-field" placeholder="Dupont" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="email">Email professionnel</label>
+                    <input type="email" id="email" class="input-field" placeholder="jean.dupont@cabinet.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Mot de passe</label>
+                    <input type="password" id="password" class="input-field" placeholder="Minimum 8 caractères" required minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="confirm_password">Confirmer le mot de passe</label>
+                    <input type="password" id="confirm_password" class="input-field" placeholder="Confirmez votre mot de passe" required minlength="8">
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                    S'inscrire
+                </button>
+                
+                <p class="text-center" style="font-size: 0.875rem; color: #6b7280;">
+                    Déjà un compte ? <a href="/" style="color: #2563eb; font-weight: 600;">Se connecter</a>
+                </p>
+            </form>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <strong>Note:</strong> Votre compte sera activé après validation par un administrateur.
+        </div>
+    </div>
+    
+    <script src="/static/js/register.js"></script>
+</body>
+</html>

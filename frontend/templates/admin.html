@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">Jurisprudence</a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">Tableau de bord</a>
+                <a href="/search" class="nav-link">Recherche IA</a>
+                <a href="/admin" class="nav-link">Administration</a>
+                <button id="logout-btn" class="btn-secondary">Déconnexion</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Panneau d'administration</h1>
+        
+        <div id="alert-container"></div>
+        
+        <div class="section-violet mb-4">
+            <h2>Utilisateurs en attente d'approbation</h2>
+            <div id="pending-users">
+                <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                    Chargement des utilisateurs...
+                </p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Ajouter un cas de jurisprudence</h2>
+            <form id="add-case-form">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="case_number">Numéro de cas</label>
+                        <input type="text" id="case_number" class="input-field" placeholder="Ex: 2024-123" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="court">Tribunal</label>
+                        <input type="text" id="court" class="input-field" placeholder="Ex: Cour d'appel de Paris" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="title">Titre du cas</label>
+                    <input type="text" id="title" class="input-field" placeholder="Titre descriptif du cas" required>
+                </div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="category">Catégorie</label>
+                        <input type="text" id="category" class="input-field" placeholder="Ex: Droit civil" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="date_decision">Date de décision</label>
+                        <input type="date" id="date_decision" class="input-field" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea id="description" class="input-field" rows="3" required style="resize: vertical;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="facts">Faits</label>
+                    <textarea id="facts" class="input-field" rows="3" required style="resize: vertical;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="decision">Décision</label>
+                    <textarea id="decision" class="input-field" rows="3" required style="resize: vertical;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="keywords">Mots-clés (séparés par des virgules)</label>
+                    <input type="text" id="keywords" class="input-field" placeholder="contrat, responsabilité, dommages">
+                </div>
+                
+                <button type="submit" class="btn-primary">Ajouter le cas</button>
+            </form>
+        </div>
+    </div>
+    
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

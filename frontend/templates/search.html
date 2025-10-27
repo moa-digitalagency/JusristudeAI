@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche IA - Plateforme Jurisprudence</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">Jurisprudence</a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">Tableau de bord</a>
+                <a href="/search" class="nav-link">Recherche IA</a>
+                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">Administration</a>
+                <button id="logout-btn" class="btn-secondary">Déconnexion</button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Recherche Intelligente de Jurisprudence</h1>
+        
+        <div class="section-blue mb-4">
+            <h3>Décrivez votre cas</h3>
+            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                Notre IA analysera votre description et recherchera des cas similaires dans notre base de données de 2970+ décisions.
+            </p>
+            
+            <form id="search-form">
+                <div class="form-group">
+                    <label class="form-label" for="case-description">Description du cas</label>
+                    <textarea 
+                        id="case-description" 
+                        class="input-field" 
+                        rows="6" 
+                        placeholder="Décrivez les faits, le contexte juridique et les questions de droit..."
+                        required
+                        style="resize: vertical;"
+                    ></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="search-btn">
+                    Rechercher des cas similaires
+                </button>
+            </form>
+        </div>
+        
+        <div id="loading" style="display: none;" class="card text-center">
+            <p style="color: #2563eb; font-weight: 600;">
+                <span style="display: inline-block; animation: pulse 1.5s ease-in-out infinite;">🔍</span>
+                Analyse en cours par l'IA...
+            </p>
+        </div>
+        
+        <div id="results-container" style="display: none;">
+            <h2>Résultats de l'analyse</h2>
+            <div id="results-content"></div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+    
+    <script src="/static/js/search.js"></script>
+</body>
+</html>
