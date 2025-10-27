@@ -163,6 +163,9 @@ def search_similar_cases():
     if not query:
         return jsonify({'error': 'Requête vide'}), 400
     
+    # Charger TOUS les cas pour garantir des résultats complets
+    # Note: Les tentatives d'optimisation ont été abandonnées car elles causaient
+    # des régressions de rappel (cas manquants avec info uniquement dans champs cryptés)
     all_cases = JurisprudenceCase.query.all()
     decrypted_cases = [case.to_dict(decrypt=True) for case in all_cases]
     
@@ -188,6 +191,9 @@ def search_similar_cases_stream():
     if not query:
         return jsonify({'error': 'Requête vide'}), 400
     
+    # Charger TOUS les cas pour garantir des résultats complets
+    # Note: Les tentatives d'optimisation ont été abandonnées car elles causaient
+    # des régressions de rappel (cas manquants avec info uniquement dans champs cryptés)
     all_cases = JurisprudenceCase.query.all()
     decrypted_cases = [case.to_dict(decrypt=True) for case in all_cases]
     
