@@ -178,6 +178,32 @@ def search_similar_cases():
     
     return jsonify(ai_result), 200
 
+@cases_bp.route('/cases/stats', methods=['GET'])
+@login_required
+def get_case_stats():
+    from datetime import datetime, timedelta
+    from sqlalchemy import func
+    
+    total = JurisprudenceCase.query.count()
+    
+    this_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    this_month = JurisprudenceCase.query.filter(
+        JurisprudenceCase.created_at >= this_month_start
+    ).count()
+    
+    my_cases = JurisprudenceCase.query.filter_by(created_by=current_user.id).count()
+    
+    with_pdf = JurisprudenceCase.query.filter(
+        JurisprudenceCase.pdf_file_path.isnot(None)
+    ).count()
+    
+    return jsonify({
+        'total': total,
+        'this_month': this_month,
+        'my_cases': my_cases,
+        'with_pdf': with_pdf
+    }), 200
+
 @cases_bp.route('/stats', methods=['GET'])
 @login_required
 def get_stats():

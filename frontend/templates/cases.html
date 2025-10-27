@@ -7,6 +7,106 @@
     <link rel="stylesheet" href="/static/css/moa-design.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 3px dotted;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-card.green { border-color: #10b981; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+        .stat-card.blue { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+        .stat-card.violet { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
+        .stat-card.orange { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .stat-icon.violet { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        
+        .stat-content h3 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .stat-content p {
+            margin: 0.25rem 0 0 0;
+            color: #6b7280;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.25rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1f2937;
+        }
+        
+        .tab:hover {
+            background: #f3f4f6;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -49,6 +149,26 @@
             background: #dc2626;
             transform: scale(1.1);
         }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -78,56 +198,306 @@
     </nav>
     
     <div class="container">
-        <div class="section-blue mb-3">
-            <h1 style="margin-bottom: 1rem;">
-                <i class="fas fa-folder-open"></i> Base de Jurisprudence
-            </h1>
-            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                <button class="btn-primary btn-sm" onclick="toggleSelectAll()">
-                    <i class="fas fa-check-square"></i> Sélectionner tout
-                </button>
-                <button class="btn-secondary btn-sm" onclick="deleteSelected()">
-                    <i class="fas fa-trash"></i> Supprimer sélection
-                </button>
+        <h1><i class="fas fa-folder-open"></i> Base de Jurisprudence</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <div class="stat-icon green">
+                    <i class="fas fa-gavel"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-total-cases">0</h3>
+                    <p>Cas Total</p>
+                </div>
+            </div>
+            
+            <div class="stat-card blue">
+                <div class="stat-icon blue">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-recent-cases">0</h3>
+                    <p>Ce Mois-ci</p>
+                </div>
+            </div>
+            
+            <div class="stat-card violet">
+                <div class="stat-icon violet">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-my-cases">0</h3>
+                    <p>Mes Ajouts</p>
+                </div>
+            </div>
+            
+            <div class="stat-card orange">
+                <div class="stat-icon orange">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="stat-pdf-cases">0</h3>
+                    <p>Avec PDF</p>
+                </div>
             </div>
         </div>
         
-        <div class="section-green">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 style="margin: 0;">
-                    <i class="fas fa-list"></i> Liste des cas
-                </h2>
-                <span class="badge-green" id="totalCount">0 cas</span>
+        <div class="tabs">
+            <div class="tab active" data-tab="list" onclick="switchTab('list')">
+                <i class="fas fa-list"></i> Liste des cas
             </div>
-            
-            <div class="table-responsive">
-                <table id="casesTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;"></th>
-                            <th># Ref</th>
-                            <th>📄 Titre</th>
-                            <th>🏛 Juridiction</th>
-                            <th>🌍 Pays/Ville</th>
-                            <th>📋 Chambre</th>
-                            <th>🔢 N° Décision</th>
-                            <th>📅 Date</th>
-                            <th>📑 Type</th>
-                            <th>🏷 Thème</th>
-                            <th style="text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="casesTableBody">
-                        <tr>
-                            <td colspan="11" style="text-align: center; padding: 2rem;">
-                                <i class="fas fa-spinner fa-spin"></i> Chargement...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="tab" data-tab="add" onclick="switchTab('add')">
+                <i class="fas fa-plus-circle"></i> Ajouter un cas
             </div>
-            
-            <div id="pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem;"></div>
+            <div class="tab" data-tab="import-pdf" onclick="switchTab('import-pdf')">
+                <i class="fas fa-file-pdf"></i> Import PDF Simple
+            </div>
+            <div class="tab" data-tab="batch-import" onclick="switchTab('batch-import')">
+                <i class="fas fa-file-upload"></i> Import en Masse
+            </div>
+        </div>
+        
+        <div id="alert-container"></div>
+        
+        <!-- Liste des cas -->
+        <div id="list-tab" class="tab-content active">
+            <div class="section-green">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="margin: 0;">
+                        <i class="fas fa-database"></i> Tous les cas
+                    </h2>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn-primary btn-sm" onclick="toggleSelectAll()">
+                            <i class="fas fa-check-square"></i> Tout sélectionner
+                        </button>
+                        <button class="btn-secondary btn-sm" onclick="deleteSelected()">
+                            <i class="fas fa-trash"></i> Supprimer sélection
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="casesTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;"></th>
+                                <th># Ref</th>
+                                <th>📄 Titre</th>
+                                <th>🏛 Juridiction</th>
+                                <th>🌍 Pays/Ville</th>
+                                <th>📋 Chambre</th>
+                                <th>🔢 N° Décision</th>
+                                <th>📅 Date</th>
+                                <th>📑 Type</th>
+                                <th>🏷 Thème</th>
+                                <th style="text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="casesTableBody">
+                            <tr>
+                                <td colspan="11" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Chargement...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+        
+        <!-- Ajouter un cas -->
+        <div id="add-tab" class="tab-content">
+            <div class="section-blue">
+                <h2><i class="fas fa-plus-square"></i> Ajouter un cas de jurisprudence</h2>
+                <form id="add-case-form">
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-hashtag"></i> Référence *
+                            </label>
+                            <input type="text" id="ref" class="input-field" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar"></i> Date de décision
+                            </label>
+                            <input type="date" id="date_decision" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-heading"></i> Titre *
+                        </label>
+                        <input type="text" id="titre" class="input-field" required>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-landmark"></i> Juridiction
+                            </label>
+                            <input type="text" id="juridiction" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt"></i> Pays/Ville
+                            </label>
+                            <input type="text" id="pays_ville" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-3">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-file-alt"></i> N° de décision
+                            </label>
+                            <input type="text" id="numero_decision" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-folder"></i> N° de dossier
+                            </label>
+                            <input type="text" id="numero_dossier" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-tag"></i> Type de décision
+                            </label>
+                            <input type="text" id="type_decision" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-door-open"></i> Chambre
+                            </label>
+                            <input type="text" id="chambre" class="input-field">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-link"></i> Source
+                            </label>
+                            <input type="text" id="source" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-book"></i> Thème
+                        </label>
+                        <textarea id="theme" class="input-field" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-tags"></i> Mots-clés (séparés par des virgules)
+                        </label>
+                        <textarea id="mots_cles" class="input-field" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-balance-scale"></i> Base légale
+                        </label>
+                        <textarea id="base_legale" class="input-field" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-file-text"></i> Résumé en français
+                        </label>
+                        <textarea id="resume_francais" class="input-field" rows="5"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-language"></i> Résumé en arabe
+                        </label>
+                        <textarea id="resume_arabe" class="input-field" rows="5" dir="rtl"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-scroll"></i> Texte intégral
+                        </label>
+                        <textarea id="texte_integral" class="input-field" rows="8"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Ajouter le cas
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Import PDF Simple -->
+        <div id="import-pdf-tab" class="tab-content">
+            <div class="section-violet">
+                <h2><i class="fas fa-file-import"></i> Import PDF avec extraction automatique</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Importez un PDF et le système extraira automatiquement tous les champs selon la structure standard.
+                </p>
+                
+                <input type="file" id="single-pdf-file" accept=".pdf" class="input-field">
+                <button onclick="importSinglePDF()" class="btn-primary mt-2">
+                    <i class="fas fa-magic"></i> Importer et Extraire
+                </button>
+                
+                <div id="extraction-preview" style="display: none;" class="mt-4">
+                    <h3><i class="fas fa-eye"></i> Données extraites (Vérifiez avant de sauvegarder)</h3>
+                    <div id="extracted-data" class="section-cyan"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Import en Masse -->
+        <div id="batch-import-tab" class="tab-content">
+            <div class="section-orange">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Importation en Masse de PDFs</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Importez jusqu'à 200 PDFs à la fois. Les fichiers seront traités un par un pour éviter les erreurs.
+                </p>
+                
+                <div class="section-blue">
+                    <h3><i class="fas fa-file-pdf"></i> Sélectionner les PDFs</h3>
+                    <input type="file" id="batch-files" accept=".pdf" multiple class="input-field">
+                    <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;" id="file-count">
+                        <i class="fas fa-info-circle"></i> <span id="file-count-number">0</span> fichier(s) sélectionné(s)
+                    </p>
+                    <button onclick="loadFilesList()" class="btn-primary mt-2" id="load-files-btn">
+                        <i class="fas fa-list"></i> Précharger la liste
+                    </button>
+                </div>
+                
+                <div id="files-list-section" style="display: none;" class="mt-4">
+                    <div class="section-green">
+                        <h3><i class="fas fa-list-ul"></i> Fichiers à importer (<span id="total-files-count">0</span>)</h3>
+                        <div id="files-list" style="max-height: 400px; overflow-y: auto; margin: 1rem 0;"></div>
+                        <button onclick="startBatchImport()" class="btn-primary" id="start-import-btn">
+                            <i class="fas fa-play"></i> Démarrer l'importation
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="batch-progress" style="display: none;" class="mt-4">
+                    <div class="section-cyan">
+                        <h3><i class="fas fa-tasks"></i> Progression de l'importation</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+                        </div>
+                        <p id="batch-status-text" style="margin-top: 1rem;">En attente...</p>
+                        <div style="margin-top: 1rem;">
+                            <strong><i class="fas fa-check-circle" style="color: #10b981;"></i> Succès:</strong> <span id="success-count">0</span> | 
+                            <strong><i class="fas fa-times-circle" style="color: #ef4444;"></i> Erreurs:</strong> <span id="error-count">0</span> |
+                            <strong><i class="fas fa-hourglass-half" style="color: #f59e0b;"></i> En attente:</strong> <span id="pending-count">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
