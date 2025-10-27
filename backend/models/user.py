@@ -16,5 +16,13 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
+    def __init__(self, email, password_hash, first_name, last_name, is_approved=False, is_admin=False):
+        self.email = email
+        self.password_hash = password_hash
+        self.first_name = first_name
+        self.last_name = last_name
+        self.is_approved = is_approved
+        self.is_admin = is_admin
+    
     def __repr__(self):
         return f'<User {self.email}>'
