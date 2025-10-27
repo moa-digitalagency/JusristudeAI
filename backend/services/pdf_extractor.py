@@ -85,8 +85,8 @@ class PDFExtractor:
     def extract_resume_francais(self, text: str) -> Optional[str]:
         """Extrait le résumé en français"""
         patterns = [
-            r'R[ée]sum[ée]\s*en\s*fran[çc]ais\s*:?\s*(.+?)(?:\n\n\n|R[ée]sum[ée]\s*en\s*arabe)',
-            r'R[ée]sum[ée]\s*en\s*fran[çc]ais\s*(.+?)(?=R[ée]sum[ée]\s*en\s*arabe)',
+            r'R[ée]sum[ée]\s*en\s*fran[çc]ais\s*:?\s*(.+?)(?:\n\n\n|R[ée]sum[ée]\s*en\s*arabe|Texte\s*int[ée]gral)',
+            r'R[ée]sum[ée]\s*en\s*fran[çc]ais\s*(.+?)(?=R[ée]sum[ée]\s*en\s*arabe|Texte\s*int[ée]gral)',
         ]
         
         for pattern in patterns:
@@ -95,33 +95,68 @@ class PDFExtractor:
                 resume = match.group(1).strip()
                 resume = re.sub(r'\n+', ' ', resume)
                 resume = re.sub(r'\s+', ' ', resume)
-                return resume
+                if resume and len(resume) > 10:
+                    return resume
         
         return None
+    
+    def clean_arabic_text(self, text: str) -> str:
+        """Nettoie le texte arabe en enlevant les caractères spéciaux et pieds de page"""
+        if not text:
+            return text
+        
+        # Enlever les caractères de remplacement Unicode (□, �, etc.)
+        text = re.sub(r'[\u25A0-\u25FF\uFFFD]', '', text)
+        
+        # Enlever les pieds de page en français avec numérotation X/X à la fin
+        # Pattern spécifique: phrase française + numérotation
+        text = re.sub(r'[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s:,\.\-\(\)]{20,}\s+\d+/\d+\s*', ' ', text)
+        
+        # Enlever uniquement les lignes qui sont des pieds de page évidents
+        lines = text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Ignore si c'est clairement un pied de page français (ligne longue en français avec X/X à la fin)
+            if re.search(r'^[A-Za-zÀ-ÿ\s:,\.\-\(\)]{30,}\d+/\d+\s*$', line.strip()):
+                continue
+            cleaned_lines.append(line)
+        
+        text = '\n'.join(cleaned_lines)
+        
+        # Nettoyer les espaces multiples mais garder la structure
+        text = re.sub(r' +', ' ', text)
+        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        
+        return text.strip()
     
     def extract_resume_arabe(self, text: str) -> Optional[str]:
         """Extrait le résumé en arabe"""
         patterns = [
-            r'R[ée]sum[ée]\s*en\s*arabe\s*:?\s*(.+?)(?:\n\n\n|Texte\s*int[ée]gral|ﺑﺎﺳﻢ\s*ﺟﻼﻟﺔ)',
-            r'ﺐﺣﺎﺴﻟا\s*ﻊﻴﻗﻮﺗ\s*ﺮﻳوﺰﺗ(.+?)(?=Texte\s*int[ée]gral|ﺑﺎﺳﻢ\s*ﺟﻼﻟﺔ)',
+            r'R[ée]sum[ée]\s*en\s*arabe\s*:?\s*(.+?)(?=Texte\s*int[ée]gral|$)',
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text, re.DOTALL)
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
             if match:
-                return match.group(1).strip()
+                arabic_text = match.group(1).strip()
+                arabic_text = self.clean_arabic_text(arabic_text)
+                if arabic_text and len(arabic_text) > 10:
+                    return arabic_text
         
-        arabic_start = text.find('R') if 'Résumé en arabe' in text else -1
-        if arabic_start > 0:
-            arabic_section = text[arabic_start:]
-            arabic_match = re.search(r'[ء-ي].+', arabic_section, re.DOTALL)
-            if arabic_match:
-                end_markers = ['Texte intégral', 'ﺑﺎﺳﻢ ﺟﻼﻟﺔ']
-                arabic_text = arabic_match.group(0)
-                for marker in end_markers:
-                    if marker in arabic_text:
-                        arabic_text = arabic_text.split(marker)[0]
-                return arabic_text.strip()
+        # Fallback: chercher après "Résumé en arabe"
+        if 'Résumé en arabe' in text or 'Resume en arabe' in text:
+            parts = re.split(r'R[ée]sum[ée]\s*en\s*arabe', text, flags=re.IGNORECASE)
+            if len(parts) > 1:
+                remaining = parts[1]
+                # Chercher jusqu'à "Texte intégral" ou fin
+                if 'Texte intégral' in remaining or 'Texte integral' in remaining:
+                    arabic_text = re.split(r'Texte\s*int[ée]gral', remaining, flags=re.IGNORECASE)[0]
+                else:
+                    arabic_text = remaining
+                
+                arabic_text = self.clean_arabic_text(arabic_text)
+                if arabic_text and len(arabic_text) > 10:
+                    return arabic_text
         
         return None
     
@@ -129,13 +164,15 @@ class PDFExtractor:
         """Extrait le texte intégral de la décision"""
         patterns = [
             r'Texte\s*int[ée]gral\s*:?\s*(.+)',
-            r'ﺑﺎﺳﻢ\s*ﺟﻼﻟﺔ\s*اﻟﻤﻠﻚ\s*وﻃﺒﻘﺎ\s*ﻟﻠﻘﺎﻧﻮن(.+)',
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, text, re.DOTALL)
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
             if match:
-                return match.group(1).strip()
+                texte = match.group(1).strip()
+                texte = self.clean_arabic_text(texte)
+                if texte and len(texte) > 10:
+                    return texte
         
         return None
     
@@ -230,9 +267,9 @@ Texte à analyser:
                 'mots_cles': self.extract_field(text, 'mots_cles'),
                 'base_legale': self.extract_field(text, 'base_legale'),
                 'source': self.extract_field(text, 'source'),
-                'resume_francais': self.extract_resume_francais(text),
-                'resume_arabe': self.extract_resume_arabe(text),
-                'texte_integral': self.extract_texte_integral(text),
+                'resume_francais': self.extract_resume_francais(text) or 'Non disponible',
+                'resume_arabe': self.extract_resume_arabe(text) or 'غير متوفر',
+                'texte_integral': self.extract_texte_integral(text) or 'Non disponible',
             }
             
             ai_data = self.extract_with_ai(text)
