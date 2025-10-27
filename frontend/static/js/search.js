@@ -204,7 +204,6 @@ function displayResults(data) {
             `;
             
             data.similar_cases.forEach((caseItem, index) => {
-                const reason = data.similarity_reasons ? data.similarity_reasons[caseItem.ref] : '';
                 html += `
                     <div class="card mb-2" style="border-left: 3px solid #10b981;">
                         <h4 style="color: #10b981; margin-bottom: 0.5rem;">
@@ -214,12 +213,6 @@ function displayResults(data) {
                             <strong>Juridiction:</strong> ${caseItem.juridiction || 'N/A'} | 
                             <strong>Date:</strong> ${caseItem.date_decision || 'N/A'}
                         </div>
-                        ${reason ? `
-                            <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                                <strong style="color: #059669;">Raison de similarité:</strong>
-                                <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem;">${reason}</p>
-                            </div>
-                        ` : ''}
                         <div style="margin-top: 0.75rem;">
                             <a href="/case/${caseItem.id}" class="btn btn-sm btn-primary">
                                 Voir le cas complet
