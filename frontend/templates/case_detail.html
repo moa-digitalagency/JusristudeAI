@@ -7,12 +7,33 @@
     <link rel="stylesheet" href="/static/css/moa-design.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .case-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .case-title-block {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 0.75rem;
             margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .case-title-block i {
+            font-size: 1.8rem;
+            margin-top: 0.2rem;
+        }
+        
+        .case-title-content h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .case-title-content .ref {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.95;
         }
         
         .case-section {
@@ -47,8 +68,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
+            margin: 0 0 1.2rem 0;
+            font-size: 1rem;
             font-weight: 600;
         }
         
@@ -60,9 +81,8 @@
         
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem 1.5rem;
         }
         
         .info-item {
@@ -72,22 +92,25 @@
         .info-label {
             font-weight: 600;
             color: #6b7280;
-            font-size: 0.85rem;
-            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+            text-transform: capitalize;
         }
         
         .info-value {
-            color: #111827;
-            font-size: 0.95rem;
+            color: #1f2937;
+            font-size: 0.92rem;
+            line-height: 1.5;
         }
         
         .text-content {
             background: #f9fafb;
-            padding: 1.5rem;
+            padding: 1.2rem;
             border-radius: 0.5rem;
             border-left: 4px solid;
-            line-height: 1.8;
+            line-height: 1.7;
             white-space: pre-wrap;
+            font-size: 0.92rem;
         }
         
         .case-section.blue .text-content { border-left-color: #3b82f6; }
@@ -223,13 +246,12 @@
             const content = document.getElementById('case-content');
             
             let html = `
-                <div class="case-header">
-                    <h1 style="margin: 0 0 0.5rem 0;">
-                        <i class="fas fa-file-alt"></i> ${caseData.titre || 'Sans titre'}
-                    </h1>
-                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">
-                        Référence: <strong>${caseData.ref}</strong>
-                    </p>
+                <div class="case-title-block">
+                    <i class="fas fa-file-alt"></i>
+                    <div class="case-title-content">
+                        <h1>${caseData.titre || 'Sans titre'}</h1>
+                        <p class="ref">Référence: <strong>${caseData.ref}</strong></p>
+                    </div>
                 </div>
                 
                 <div class="case-section blue">

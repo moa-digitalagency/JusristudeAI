@@ -38,6 +38,7 @@ class JurisprudenceCase(db.Model):
     
     def to_dict(self, decrypt=False):
         from backend.utils.encryption import encryption_service
+        from backend.utils.text_cleaner import clean_case_data
         
         data = {
             'id': self.id,
@@ -77,6 +78,9 @@ class JurisprudenceCase(db.Model):
                     data['texte_integral'] = encryption_service.decrypt(self.texte_integral_encrypted)
             except Exception as e:
                 data['texte_integral'] = "[Erreur de déchiffrement - clé de chiffrement invalide]"
+        
+        # Nettoie les caractères spéciaux Unicode (U+E000 à U+F8FF)
+        data = clean_case_data(data)
         
         return data
 
