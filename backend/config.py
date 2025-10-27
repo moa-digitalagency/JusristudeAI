@@ -3,7 +3,7 @@ import sys
 from cryptography.fernet import Fernet
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SESSION_SECRET') or os.environ.get('SECRET_KEY')
     if not SECRET_KEY:
         SECRET_KEY = os.urandom(24).hex()
         print("⚠️  Avertissement: SECRET_KEY non définie, une clé temporaire a été générée")
