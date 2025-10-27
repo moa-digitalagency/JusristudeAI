@@ -8,19 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .case-title-block {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-            color: white;
+            background: white;
+            color: #1f2937;
             padding: 1.5rem;
             border-radius: 0.75rem;
             margin-bottom: 2rem;
             display: flex;
             align-items: flex-start;
             gap: 1rem;
+            border: 3px dotted #8b5cf6;
         }
         
         .case-title-block i {
             font-size: 1.8rem;
             margin-top: 0.2rem;
+            color: #8b5cf6;
         }
         
         .case-title-content h1 {
@@ -28,12 +30,13 @@
             font-size: 1.3rem;
             font-weight: 600;
             line-height: 1.4;
+            color: #1f2937;
         }
         
         .case-title-content .ref {
             margin: 0;
             font-size: 0.95rem;
-            opacity: 0.95;
+            color: #6b7280;
         }
         
         .case-section {
@@ -64,6 +67,10 @@
             border-color: #f59e0b;
         }
         
+        .case-section.indigo {
+            border-color: #6366f1;
+        }
+        
         .case-section h3 {
             display: flex;
             align-items: center;
@@ -78,11 +85,16 @@
         .case-section.violet h3 { color: #8b5cf6; }
         .case-section.cyan h3 { color: #06b6d4; }
         .case-section.orange h3 { color: #f59e0b; }
+        .case-section.indigo h3 { color: #6366f1; }
         
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.2rem 1.5rem;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            border: 2px solid #e5e7eb;
         }
         
         .info-item {
@@ -107,17 +119,18 @@
             background: #f9fafb;
             padding: 1.2rem;
             border-radius: 0.5rem;
-            border-left: 4px solid;
+            border: 2px solid;
             line-height: 1.7;
             white-space: pre-wrap;
             font-size: 0.92rem;
         }
         
-        .case-section.blue .text-content { border-left-color: #3b82f6; }
-        .case-section.green .text-content { border-left-color: #10b981; }
-        .case-section.violet .text-content { border-left-color: #8b5cf6; }
-        .case-section.cyan .text-content { border-left-color: #06b6d4; }
-        .case-section.orange .text-content { border-left-color: #f59e0b; }
+        .case-section.blue .text-content { border-color: #3b82f6; }
+        .case-section.green .text-content { border-color: #10b981; }
+        .case-section.violet .text-content { border-color: #8b5cf6; }
+        .case-section.cyan .text-content { border-color: #06b6d4; }
+        .case-section.orange .text-content { border-color: #f59e0b; }
+        .case-section.indigo .text-content { border-color: #6366f1; }
         
         .loading-spinner {
             text-align: center;
@@ -356,12 +369,40 @@
             }
             
             if (caseData.texte_integral) {
-                html += `
-                    <div class="case-section orange">
-                        <h3><i class="fas fa-book"></i> Texte intégral</h3>
-                        <div class="text-content">${caseData.texte_integral}</div>
-                    </div>
-                `;
+                // Détecter et séparer "Version française de la décision"
+                const versionFrMatch = caseData.texte_integral.match(/(Version française de la décision[\s\S]*)/i);
+                
+                if (versionFrMatch) {
+                    // Séparer le texte intégral et la version française
+                    const texteIntegral = caseData.texte_integral.substring(0, versionFrMatch.index).trim();
+                    const versionFrancaise = versionFrMatch[1].trim();
+                    
+                    // Afficher le texte intégral (sans la version française)
+                    if (texteIntegral) {
+                        html += `
+                            <div class="case-section orange">
+                                <h3><i class="fas fa-book"></i> Texte intégral</h3>
+                                <div class="text-content">${texteIntegral}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Afficher la version française séparément
+                    html += `
+                        <div class="case-section indigo">
+                            <h3><i class="fas fa-language"></i> Version française de la décision</h3>
+                            <div class="text-content">${versionFrancaise}</div>
+                        </div>
+                    `;
+                } else {
+                    // Pas de version française détectée, afficher normalement
+                    html += `
+                        <div class="case-section orange">
+                            <h3><i class="fas fa-book"></i> Texte intégral</h3>
+                            <div class="text-content">${caseData.texte_integral}</div>
+                        </div>
+                    `;
+                }
             }
             
             if (caseData.pdf_file_path) {
