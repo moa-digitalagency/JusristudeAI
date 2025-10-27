@@ -1,6 +1,7 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, jsonify
 from flask_login import LoginManager
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 from backend.config import Config
 from backend.models.user import db, User
 from backend.routes.auth import auth_bp, bcrypt
@@ -11,14 +12,21 @@ app = Flask(__name__,
             static_folder='../frontend/static')
 app.config.from_object(Config)
 
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins=['http://localhost:5000', 'http://127.0.0.1:5000'])
+
+csrf = CSRFProtect(app)
+csrf.exempt(auth_bp)
+csrf.exempt(cases_bp)
 
 db.init_app(app)
 bcrypt.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({'error': 'Authentification requise'}), 401
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -47,6 +55,11 @@ def search_page():
 def admin_page():
     return render_template('admin.html')
 
+@app.route('/api/csrf-token', methods=['GET'])
+def get_csrf_token():
+    from flask_wtf.csrf import generate_csrf
+    return jsonify({'csrf_token': generate_csrf()})
+
 with app.app_context():
     db.create_all()
     
@@ -65,5 +78,3 @@ with app.app_context():
         db.session.commit()
         print("✓ Administrateur créé: admin@jurisprudence.com / Admin123!")
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
