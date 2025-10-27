@@ -63,20 +63,26 @@ def get_csrf_token():
     return jsonify({'csrf_token': generate_csrf()})
 
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"⚠️  Tables already exist or error creating tables: {e}")
     
-    admin = User.query.filter_by(email='admin@jurisprudence.com').first()
-    if not admin:
-        from flask_bcrypt import generate_password_hash
-        admin_user = User(
-            email='admin@jurisprudence.com',
-            password_hash=generate_password_hash('Admin123!').decode('utf-8'),
-            first_name='Admin',
-            last_name='System',
-            is_approved=True,
-            is_admin=True
-        )
-        db.session.add(admin_user)
-        db.session.commit()
-        print("✓ Administrateur créé: admin@jurisprudence.com / Admin123!")
+    try:
+        admin = User.query.filter_by(email='admin@jurisprudence.com').first()
+        if not admin:
+            from flask_bcrypt import generate_password_hash
+            admin_user = User(
+                email='admin@jurisprudence.com',
+                password_hash=generate_password_hash('Admin123!').decode('utf-8'),
+                first_name='Admin',
+                last_name='System',
+                is_approved=True,
+                is_admin=True
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✓ Administrateur créé: admin@jurisprudence.com / Admin123!")
+    except Exception as e:
+        print(f"⚠️  Error checking/creating admin user: {e}")
 
