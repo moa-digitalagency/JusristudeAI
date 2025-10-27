@@ -234,38 +234,59 @@ async function loadCases() {
                     <i class="fas fa-database"></i> Total: ${data.cases.length} cas
                 </span>
             </div>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">
-                            <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
-                        </th>
-                        <th><i class="fas fa-hashtag"></i> Ref</th>
-                        <th><i class="fas fa-heading"></i> Titre</th>
-                        <th><i class="fas fa-landmark"></i> Juridiction</th>
-                        <th><i class="fas fa-calendar"></i> Date</th>
-                        <th><i class="fas fa-cog"></i> Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.cases.map(c => `
-                        <tr id="case-row-${c.id}">
-                            <td>
-                                <input type="checkbox" class="case-checkbox" value="${c.id}" onchange="updateSelectedCount()" style="cursor: pointer; width: 18px; height: 18px;">
-                            </td>
-                            <td><strong>${c.ref || 'N/A'}</strong></td>
-                            <td>${c.titre || 'Sans titre'}</td>
-                            <td>${c.juridiction || 'N/A'}</td>
-                            <td>${c.date_decision || 'N/A'}</td>
-                            <td>
-                                <button onclick="deleteCase(${c.id})" class="action-btn delete">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll()" style="cursor: pointer; width: 18px; height: 18px;">
+                            </th>
+                            <th><i class="fas fa-hashtag"></i> Ref</th>
+                            <th><i class="fas fa-heading"></i> Titre</th>
+                            <th><i class="fas fa-landmark"></i> Juridiction</th>
+                            <th><i class="fas fa-map-marker-alt"></i> Pays/Ville</th>
+                            <th><i class="fas fa-door-open"></i> Chambre</th>
+                            <th><i class="fas fa-file-alt"></i> N° Décision</th>
+                            <th><i class="fas fa-folder"></i> N° Dossier</th>
+                            <th><i class="fas fa-tag"></i> Type</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
+                            <th><i class="fas fa-book"></i> Thème</th>
+                            <th><i class="fas fa-tags"></i> Mots-clés</th>
+                            <th style="min-width: 200px;"><i class="fas fa-cog"></i> Actions</th>
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${data.cases.map(c => `
+                            <tr id="case-row-${c.id}">
+                                <td>
+                                    <input type="checkbox" class="case-checkbox" value="${c.id}" onchange="updateSelectedCount()" style="cursor: pointer; width: 18px; height: 18px;">
+                                </td>
+                                <td><strong>${c.ref || 'N/A'}</strong></td>
+                                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${c.titre || ''}">${c.titre || 'Sans titre'}</td>
+                                <td>${c.juridiction || 'N/A'}</td>
+                                <td>${c.pays_ville || 'N/A'}</td>
+                                <td>${c.chambre || 'N/A'}</td>
+                                <td>${c.numero_decision || 'N/A'}</td>
+                                <td>${c.numero_dossier || 'N/A'}</td>
+                                <td>${c.type_decision || 'N/A'}</td>
+                                <td>${c.date_decision || 'N/A'}</td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${c.theme || ''}">${c.theme || 'N/A'}</td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${c.mots_cles || ''}">${c.mots_cles || 'N/A'}</td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
+                                        <button onclick="viewCaseDetails(${c.id})" class="action-btn" style="background: linear-gradient(135deg, #10b981, #059669);">
+                                            <i class="fas fa-eye"></i> Voir
+                                        </button>
+                                        <button onclick="deleteCase(${c.id})" class="action-btn delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
         `;
         
         loadStats();
@@ -811,6 +832,175 @@ async function deleteAllCases() {
         showAlert('Erreur lors de la suppression: ' + error.message, 'error');
     }
 }
+
+// Fonction pour afficher les détails complets d'un cas
+async function viewCaseDetails(caseId) {
+    const modal = document.getElementById('case-details-modal');
+    const modalBody = document.getElementById('modal-body-content');
+    
+    modal.classList.add('active');
+    modalBody.innerHTML = '<p style="text-align: center; color: #6b7280;"><i class="fas fa-spinner fa-spin"></i> Chargement des détails...</p>';
+    
+    try {
+        const response = await fetch(`/api/cases/${caseId}`, { credentials: 'include' });
+        const caseData = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(caseData.error || 'Erreur lors du chargement');
+        }
+        
+        modalBody.innerHTML = `
+            <div class="detail-section">
+                <h3><i class="fas fa-info-circle"></i> Informations générales</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-hashtag"></i> Référence</strong>
+                        <div class="value">${caseData.ref || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-heading"></i> Titre</strong>
+                        <div class="value">${caseData.titre || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-calendar"></i> Date de décision</strong>
+                        <div class="value">${caseData.date_decision || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3><i class="fas fa-landmark"></i> Juridiction</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-landmark"></i> Juridiction</strong>
+                        <div class="value">${caseData.juridiction || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-map-marker-alt"></i> Pays/Ville</strong>
+                        <div class="value">${caseData.pays_ville || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-door-open"></i> Chambre</strong>
+                        <div class="value">${caseData.chambre || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3><i class="fas fa-file-alt"></i> Références de la décision</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-file-alt"></i> Numéro de décision</strong>
+                        <div class="value">${caseData.numero_decision || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-folder"></i> Numéro de dossier</strong>
+                        <div class="value">${caseData.numero_dossier || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-tag"></i> Type de décision</strong>
+                        <div class="value">${caseData.type_decision || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-link"></i> Source</strong>
+                        <div class="value">${caseData.source || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3><i class="fas fa-book"></i> Classification</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-book"></i> Thème</strong>
+                        <div class="value">${caseData.theme || 'N/A'}</div>
+                    </div>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-tags"></i> Mots-clés</strong>
+                        <div class="value">${caseData.mots_cles || 'N/A'}</div>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-balance-scale"></i> Base légale</strong>
+                        <div class="value">${caseData.base_legale || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            ${caseData.resume_francais ? `
+                <div class="detail-section">
+                    <h3><i class="fas fa-align-left"></i> Résumé (Français)</h3>
+                    <div class="detail-text">${caseData.resume_francais}</div>
+                </div>
+            ` : ''}
+            
+            ${caseData.resume_arabe ? `
+                <div class="detail-section">
+                    <h3><i class="fas fa-language"></i> Résumé (Arabe)</h3>
+                    <div class="detail-text" dir="rtl">${caseData.resume_arabe}</div>
+                </div>
+            ` : ''}
+            
+            ${caseData.texte_integral ? `
+                <div class="detail-section">
+                    <h3><i class="fas fa-scroll"></i> Texte intégral</h3>
+                    <div class="detail-text">${caseData.texte_integral}</div>
+                </div>
+            ` : ''}
+            
+            ${caseData.pdf_file_path ? `
+                <div class="detail-section">
+                    <h3><i class="fas fa-file-pdf"></i> Fichier PDF</h3>
+                    <div class="detail-item">
+                        <strong><i class="fas fa-paperclip"></i> Chemin du fichier</strong>
+                        <div class="value">${caseData.pdf_file_path}</div>
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="detail-section">
+                <h3><i class="fas fa-clock"></i> Métadonnées</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <strong><i class="fas fa-calendar-plus"></i> Date de création</strong>
+                        <div class="value">${caseData.created_at || 'N/A'}</div>
+                    </div>
+                    ${caseData.updated_at ? `
+                        <div class="detail-item">
+                            <strong><i class="fas fa-calendar-check"></i> Dernière modification</strong>
+                            <div class="value">${caseData.updated_at}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+                <p style="color: #ef4444; font-weight: 600;">Erreur lors du chargement des détails</p>
+                <p style="color: #6b7280;">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Fonction pour fermer le modal
+function closeModal(event) {
+    if (!event || event.target === event.currentTarget || !event.target) {
+        const modal = document.getElementById('case-details-modal');
+        modal.classList.remove('active');
+    }
+}
+
+// Fermer le modal avec la touche Échap
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
 
 // Charger les données initiales
 loadStats();
