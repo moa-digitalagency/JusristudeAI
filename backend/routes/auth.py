@@ -78,11 +78,18 @@ def get_current_user():
 
 @auth_bp.route('/admin/users', methods=['GET'])
 @login_required
-def get_pending_users():
+def get_all_users():
     if not current_user.is_admin:
         return jsonify({'error': 'Accès non autorisé'}), 403
     
-    pending_users = User.query.filter_by(is_approved=False).all()
+    status_filter = request.args.get('status', 'all')
+    
+    if status_filter == 'pending':
+        users = User.query.filter_by(is_approved=False).all()
+    elif status_filter == 'approved':
+        users = User.query.filter_by(is_approved=True).all()
+    else:
+        users = User.query.all()
     
     return jsonify({
         'users': [{
@@ -90,9 +97,64 @@ def get_pending_users():
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'is_approved': user.is_approved,
+            'is_admin': user.is_admin,
             'created_at': user.created_at.isoformat()
-        } for user in pending_users]
+        } for user in users]
     }), 200
+
+@auth_bp.route('/admin/users/<int:user_id>', methods=['GET'])
+@login_required
+def get_user(user_id):
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    return jsonify({
+        'id': user.id,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_approved': user.is_approved,
+        'is_admin': user.is_admin,
+        'created_at': user.created_at.isoformat()
+    }), 200
+
+@auth_bp.route('/admin/users/<int:user_id>', methods=['PUT'])
+@login_required
+def update_user(user_id):
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    user = User.query.get_or_404(user_id)
+    data = request.get_json()
+    
+    if 'first_name' in data:
+        user.first_name = data['first_name']
+    if 'last_name' in data:
+        user.last_name = data['last_name']
+    if 'is_approved' in data:
+        user.is_approved = data['is_approved']
+    if 'is_admin' in data:
+        user.is_admin = data['is_admin']
+    
+    db.session.commit()
+    return jsonify({'message': f'Utilisateur {user.email} mis à jour'}), 200
+
+@auth_bp.route('/admin/users/<int:user_id>', methods=['DELETE'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    if user_id == current_user.id:
+        return jsonify({'error': 'Vous ne pouvez pas supprimer votre propre compte'}), 400
+    
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    
+    return jsonify({'message': f'Utilisateur {user.email} supprimé'}), 200
 
 @auth_bp.route('/admin/approve/<int:user_id>', methods=['POST'])
 @login_required
@@ -105,3 +167,18 @@ def approve_user(user_id):
     db.session.commit()
     
     return jsonify({'message': f'Utilisateur {user.email} approuvé'}), 200
+
+@auth_bp.route('/admin/suspend/<int:user_id>', methods=['POST'])
+@login_required
+def suspend_user(user_id):
+    if not current_user.is_admin:
+        return jsonify({'error': 'Accès non autorisé'}), 403
+    
+    if user_id == current_user.id:
+        return jsonify({'error': 'Vous ne pouvez pas suspendre votre propre compte'}), 400
+    
+    user = User.query.get_or_404(user_id)
+    user.is_approved = False
+    db.session.commit()
+    
+    return jsonify({'message': f'Utilisateur {user.email} suspendu'}), 200
