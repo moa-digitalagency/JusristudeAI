@@ -16,24 +16,24 @@
         
         .stat-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 1.5rem;
+            border: 3px dotted;
             display: flex;
             align-items: center;
             gap: 1.5rem;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
         .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
         
-        .stat-card.blue { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
-        .stat-card.green { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
-        .stat-card.violet { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
-        .stat-card.orange { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
+        .stat-card.blue { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+        .stat-card.green { border-color: #10b981; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+        .stat-card.violet { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
+        .stat-card.orange { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
         
         .stat-icon {
             width: 60px;
@@ -84,18 +84,18 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            color: #1f2937;
         }
         
         .tab:hover {
             background: #f3f4f6;
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
         }
         
         .tab.active {
             background: #4285f4;
             color: white;
+            box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
         }
         
         .tab-content {
