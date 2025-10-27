@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="/static/css/moa-design.css">
 </head>
 <body class="login-page">
-    <div class="login-container">
-        <div class="login-card">
+    <div class="login-container" style="max-width: 600px;">
+        <div class="login-card section-blue">
             <div class="login-header">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #4285f4; margin-bottom: 1rem;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #3b82f6; margin-bottom: 1rem;">
                     <path d="M3 7h18M3 12h18M3 17h18"/>
                     <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
                 </svg>
@@ -31,24 +31,26 @@
                     <input type="password" id="password" class="input-field" placeholder="••••••••" required>
                 </div>
                 
-                <button type="submit" class="btn-login">
+                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
                     Connexion
                 </button>
                 
-                <p class="text-center" style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">
+                <p class="text-center" style="font-size: 0.875rem; color: #6b7280;">
                     Pas encore de compte ? <a href="/register" class="link-primary">S'inscrire</a>
                 </p>
             </form>
         </div>
         
-        <div class="test-account-info">
-            <div class="info-icon">ℹ️</div>
-            <div>
-                <h3>Compte administrateur de test</h3>
-                <p>
-                    Email: <strong>admin@jurisprudence.com</strong><br>
-                    Mot de passe: <strong>Admin123!</strong>
-                </p>
+        <div class="section-cyan" style="margin-top: 1.5rem;">
+            <div style="display: flex; align-items: start; gap: 1rem;">
+                <div style="font-size: 1.5rem;">ℹ️</div>
+                <div>
+                    <h3 style="margin-bottom: 0.5rem;">Compte administrateur de test</h3>
+                    <p style="font-size: 0.875rem; margin: 0;">
+                        Email: <strong>admin@jurisprudence.com</strong><br>
+                        Mot de passe: <strong>Admin123!</strong>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
