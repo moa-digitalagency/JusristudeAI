@@ -1,23 +1,34 @@
 let currentPage = 1;
 const perPage = 20;
+let selectedCases = new Set();
+let allCases = [];
 
 async function loadCases(page = 1) {
     try {
         const response = await fetch(`/api/cases?page=${page}&per_page=${perPage}`);
         const data = await response.json();
         
+        allCases = data.cases;
         displayCases(data.cases);
         displayPagination(data.page, data.pages);
+        updateTotalCount(data.total || data.cases.length);
         currentPage = page;
     } catch (error) {
         console.error('Erreur:', error);
         document.getElementById('casesTableBody').innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem; color: #ef4444;">
+                <td colspan="10" style="text-align: center; padding: 2rem; color: #ef4444;">
                     Erreur lors du chargement des cas
                 </td>
             </tr>
         `;
+    }
+}
+
+function updateTotalCount(total) {
+    const countElement = document.getElementById('totalCount');
+    if (countElement) {
+        countElement.textContent = total;
     }
 }
 
@@ -27,7 +38,7 @@ function displayCases(cases) {
     if (cases.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 2rem;">
+                <td colspan="10" style="text-align: center; padding: 2rem;">
                     Aucun cas trouvé
                 </td>
             </tr>
@@ -37,18 +48,92 @@ function displayCases(cases) {
     
     tbody.innerHTML = cases.map(c => `
         <tr>
-            <td><strong>${c.ref || 'N/A'}</strong></td>
+            <td>
+                <input type="checkbox" 
+                       class="checkbox case-checkbox" 
+                       data-case-id="${c.id}"
+                       ${selectedCases.has(c.id) ? 'checked' : ''}
+                       onchange="handleCheckboxChange(${c.id}, this.checked)">
+            </td>
+            <td class="ref-cell">${c.ref || 'N/A'}</td>
             <td>${c.titre || 'Sans titre'}</td>
             <td>${c.juridiction || 'N/A'}</td>
-            <td>${c.date_decision ? new Date(c.date_decision).toLocaleDateString('fr-FR') : 'N/A'}</td>
+            <td>${c.pays_ville || 'N/A'}</td>
+            <td>${c.chambre || 'N/A'}</td>
+            <td>${c.numero_decision || 'N/A'}</td>
+            <td>${c.date_decision ? formatDate(c.date_decision) : 'N/A'}</td>
             <td>${c.type_decision || 'N/A'}</td>
-            <td>
-                <button class="view-btn" onclick="viewCase(${c.id})">
-                    <i class="fas fa-eye"></i> Voir
-                </button>
-            </td>
+            <td>${c.theme ? truncate(c.theme, 30) : 'N/A'}</td>
         </tr>
     `).join('');
+}
+
+function formatDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+function truncate(str, length) {
+    if (!str) return '';
+    return str.length > length ? str.substring(0, length) + '...' : str;
+}
+
+function handleCheckboxChange(caseId, checked) {
+    if (checked) {
+        selectedCases.add(caseId);
+    } else {
+        selectedCases.delete(caseId);
+    }
+}
+
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.case-checkbox');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        const caseId = parseInt(cb.dataset.caseId);
+        if (allChecked) {
+            cb.checked = false;
+            selectedCases.delete(caseId);
+        } else {
+            cb.checked = true;
+            selectedCases.add(caseId);
+        }
+    });
+}
+
+async function deleteSelected() {
+    if (selectedCases.size === 0) {
+        alert('⚠️ Veuillez sélectionner au moins un cas à supprimer');
+        return;
+    }
+    
+    if (!confirm(`⚠️ Voulez-vous vraiment supprimer ${selectedCases.size} cas sélectionné(s) ? Cette action est irréversible !`)) {
+        return;
+    }
+    
+    try {
+        const deletePromises = Array.from(selectedCases).map(caseId =>
+            fetch(`/api/cases/${caseId}`, { method: 'DELETE' })
+        );
+        
+        await Promise.all(deletePromises);
+        
+        selectedCases.clear();
+        alert(`✓ ${deletePromises.length} cas supprimé(s) avec succès`);
+        loadCases(currentPage);
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de la suppression des cas');
+    }
 }
 
 function displayPagination(currentPage, totalPages) {
@@ -82,7 +167,7 @@ async function viewCase(caseId) {
         const caseData = await response.json();
         
         const detailsHTML = `
-            <h2 style="color: #3b82f6; margin-bottom: 1.5rem;">${caseData.titre}</h2>
+            <h2 style="color: #4285f4; margin-bottom: 1.5rem;">${caseData.titre}</h2>
             
             <div class="case-detail-section">
                 <h3>Identification</h3>
@@ -90,7 +175,7 @@ async function viewCase(caseId) {
                 <p><strong>Juridiction:</strong> ${caseData.juridiction || 'N/A'}</p>
                 <p><strong>Pays/Ville:</strong> ${caseData.pays_ville || 'N/A'}</p>
                 <p><strong>N° de décision:</strong> ${caseData.numero_decision || 'N/A'}</p>
-                <p><strong>Date de décision:</strong> ${caseData.date_decision ? new Date(caseData.date_decision).toLocaleDateString('fr-FR') : 'N/A'}</p>
+                <p><strong>Date de décision:</strong> ${caseData.date_decision ? formatDate(caseData.date_decision) : 'N/A'}</p>
                 <p><strong>N° de dossier:</strong> ${caseData.numero_dossier || 'N/A'}</p>
                 <p><strong>Type de décision:</strong> ${caseData.type_decision || 'N/A'}</p>
                 <p><strong>Chambre:</strong> ${caseData.chambre || 'N/A'}</p>
@@ -156,34 +241,6 @@ async function viewCase(caseId) {
 
 function closeModal() {
     document.getElementById('caseModal').style.display = 'none';
-}
-
-async function deleteAllCases() {
-    if (!confirm('⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les cas de jurisprudence ? Cette action est irréversible !')) {
-        return;
-    }
-    
-    if (!confirm('Êtes-vous absolument sûr ? Tous les cas seront définitivement supprimés !')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/cases/delete-all', {
-            method: 'DELETE'
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert(`✓ ${data.message}`);
-            loadCases(1);
-        } else {
-            alert(`❌ Erreur: ${data.error}`);
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors de la suppression des cas');
-    }
 }
 
 window.onclick = function(event) {
