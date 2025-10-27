@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Plateforme Jurisprudence</title>
+    <title>Connexion - Base de Jurisprudence</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
 </head>
-<body>
-    <div class="container" style="max-width: 500px; margin-top: 5rem;">
-        <div class="card section-blue">
-            <h1 class="text-center">Plateforme Jurisprudence</h1>
-            <p class="text-center mb-3" style="color: #6b7280;">Recherche intelligente de cas juridiques</p>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #4285f4; margin-bottom: 1rem;">
+                    <path d="M3 7h18M3 12h18M3 17h18"/>
+                    <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
+                </svg>
+                <h1>Base de Jurisprudence</h1>
+                <p class="login-subtitle">Système de gestion et recherche de cas juridiques</p>
+            </div>
             
             <div id="alert-container"></div>
             
@@ -25,22 +31,25 @@
                     <input type="password" id="password" class="input-field" placeholder="••••••••" required>
                 </div>
                 
-                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                <button type="submit" class="btn-login">
                     Connexion
                 </button>
                 
-                <p class="text-center" style="font-size: 0.875rem; color: #6b7280;">
-                    Pas encore de compte ? <a href="/register" style="color: #2563eb; font-weight: 600;">S'inscrire</a>
+                <p class="text-center" style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">
+                    Pas encore de compte ? <a href="/register" class="link-primary">S'inscrire</a>
                 </p>
             </form>
         </div>
         
-        <div class="card mt-3" style="background: rgba(139, 92, 246, 0.08); border: 2px dotted #8b5cf6;">
-            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Compte administrateur de test</h3>
-            <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">
-                Email: <strong>admin@jurisprudence.com</strong><br>
-                Mot de passe: <strong>Admin123!</strong>
-            </p>
+        <div class="test-account-info">
+            <div class="info-icon">ℹ️</div>
+            <div>
+                <h3>Compte administrateur de test</h3>
+                <p>
+                    Email: <strong>admin@jurisprudence.com</strong><br>
+                    Mot de passe: <strong>Admin123!</strong>
+                </p>
+            </div>
         </div>
     </div>
     

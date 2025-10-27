@@ -41,6 +41,13 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(cases_bp, url_prefix='/api')
 app.register_blueprint(batch_import_bp, url_prefix='/api')
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 @app.route('/')
 def index():
     return render_template('login.html')
