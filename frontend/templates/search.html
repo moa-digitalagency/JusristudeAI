@@ -3,36 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche IA - Plateforme Jurisprudence</title>
+    <title>Recherche IA - Base de Jurisprudence</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .search-methods {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
+        
         .method-card {
-            flex: 1;
             padding: 1.5rem;
             border: 3px dotted #d1d5db;
-            border-radius: 16px;
+            border-radius: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            background: white;
         }
+        
         .method-card:hover {
             border-color: #3b82f6;
-            background: #eff6ff;
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
         }
+        
         .method-card.active {
             border-color: #3b82f6;
-            background: #eff6ff;
+            background: rgba(59, 130, 246, 0.05);
         }
+        
         .search-option {
             display: none;
         }
+        
         .search-option.active {
             display: block;
         }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -42,29 +52,43 @@
 <body>
     <nav class="navbar">
         <div class="container navbar-content">
-            <a href="/dashboard" class="navbar-brand">Jurisprudence</a>
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-balance-scale"></i> Base de Jurisprudence
+            </a>
             <div class="navbar-nav">
-                <a href="/dashboard" class="nav-link">Tableau de bord</a>
-                <a href="/search" class="nav-link">Recherche IA</a>
-                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">Administration</a>
-                <button id="logout-btn" class="btn-secondary">Déconnexion</button>
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+                <a href="/search" class="nav-link active">
+                    <i class="fas fa-search"></i> Recherche IA
+                </a>
+                <a href="/cases" class="nav-link">
+                    <i class="fas fa-folder"></i> Cas
+                </a>
+                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">
+                    <i class="fas fa-cog"></i> Administration
+                </a>
+                <button id="logout-btn" class="btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
             </div>
         </div>
     </nav>
     
     <div class="container">
-        <h1>Recherche Intelligente de Jurisprudence</h1>
+        <h1><i class="fas fa-search"></i> Recherche Intelligente de Jurisprudence</h1>
         
         <div class="search-methods">
             <div class="method-card active" onclick="switchSearchMethod('text', event)">
                 <h3 style="margin-bottom: 0.5rem;">📝 Par Description</h3>
-                <p style="font-size: 0.875rem; color: #6b7280;">
+                <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">
                     Décrivez votre cas en quelques phrases
                 </p>
             </div>
+            
             <div class="method-card" onclick="switchSearchMethod('file', event)">
                 <h3 style="margin-bottom: 0.5rem;">📄 Par Document</h3>
-                <p style="font-size: 0.875rem; color: #6b7280;">
+                <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">
                     Importez un PDF ou Word
                 </p>
             </div>
@@ -72,14 +96,16 @@
         
         <div id="text-search" class="search-option active">
             <div class="section-blue mb-4">
-                <h3>Décrivez votre cas</h3>
+                <h3><i class="fas fa-file-alt"></i> Décrivez votre cas</h3>
                 <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
                     Notre IA analysera votre description et recherchera des cas similaires dans notre base de données de 2970+ décisions.
                 </p>
                 
                 <form id="search-form">
                     <div class="form-group">
-                        <label class="form-label" for="case-description">Description du cas</label>
+                        <label class="form-label" for="case-description">
+                            <i class="fas fa-edit"></i> Description du cas
+                        </label>
                         <textarea 
                             id="case-description" 
                             class="input-field" 
@@ -90,7 +116,7 @@
                     </div>
                     
                     <button type="submit" class="btn-primary" id="search-btn">
-                        Rechercher des cas similaires
+                        <i class="fas fa-search"></i> Rechercher des cas similaires
                     </button>
                 </form>
             </div>
@@ -98,14 +124,16 @@
         
         <div id="file-search" class="search-option">
             <div class="section-violet mb-4">
-                <h3>Importer un document</h3>
+                <h3><i class="fas fa-upload"></i> Importer un document</h3>
                 <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
                     Importez un document PDF ou Word contenant les informations sur votre cas. L'IA extraira automatiquement le texte et recherchera des cas similaires.
                 </p>
                 
                 <form id="file-search-form">
                     <div class="form-group">
-                        <label class="form-label" for="case-file">Fichier (PDF ou Word)</label>
+                        <label class="form-label" for="case-file">
+                            <i class="fas fa-file-pdf"></i> Fichier (PDF ou Word)
+                        </label>
                         <input 
                             type="file" 
                             id="case-file" 
@@ -118,21 +146,21 @@
                     </div>
                     
                     <button type="submit" class="btn-primary" id="file-search-btn">
-                        Analyser le document
+                        <i class="fas fa-search"></i> Analyser le document
                     </button>
                 </form>
             </div>
         </div>
         
-        <div id="loading" style="display: none;" class="card text-center">
-            <p style="color: #2563eb; font-weight: 600;">
+        <div id="loading" style="display: none;" class="section-cyan text-center">
+            <p style="color: #0e7490; font-weight: 600; margin: 0;">
                 <span style="display: inline-block; animation: pulse 1.5s ease-in-out infinite;">🔍</span>
                 Analyse en cours par l'IA...
             </p>
         </div>
         
         <div id="results-container" style="display: none;">
-            <h2>Résultats de l'analyse</h2>
+            <h2><i class="fas fa-list"></i> Résultats de l'analyse</h2>
             <div id="results-content"></div>
         </div>
     </div>

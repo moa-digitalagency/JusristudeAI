@@ -3,141 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord - Plateforme Jurisprudence</title>
+    <title>Tableau de bord - Base de Jurisprudence</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            border: 3px dotted;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-card.blue { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
-        .stat-card.green { border-color: #10b981; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
-        .stat-card.violet { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
-        
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-        }
-        
-        .stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
-        .stat-icon.violet { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        
-        .stat-content h3 {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1f2937;
-        }
-        
-        .stat-content p {
-            margin: 0.25rem 0 0 0;
-            color: #6b7280;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .welcome-banner {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
-            color: #1f2937;
-            padding: 2rem;
-            border-radius: 16px;
-            margin-bottom: 2rem;
-            border: 3px dotted #3b82f6;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .welcome-banner:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(59, 130, 246, 0.15);
-        }
-        
-        .welcome-banner h2 {
-            margin: 0 0 1rem 0;
-            font-size: 1.75rem;
-            color: #1f2937;
-        }
-        
-        .welcome-banner p {
-            margin: 0 0 1.5rem 0;
-            color: #4b5563;
-        }
-        
-        .recent-cases-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-        
-        .recent-cases-table thead {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-        }
-        
-        .recent-cases-table th,
-        .recent-cases-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .recent-cases-table tbody tr:hover {
-            background: #f9fafb;
-            cursor: pointer;
-        }
-        
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="container navbar-content">
             <a href="/dashboard" class="navbar-brand">
-                <i class="fas fa-balance-scale"></i> Jurisprudence
+                <i class="fas fa-balance-scale"></i> Base de Jurisprudence
             </a>
             <div class="navbar-nav">
-                <a href="/dashboard" class="nav-link">
+                <a href="/dashboard" class="nav-link active">
                     <i class="fas fa-home"></i> Tableau de bord
                 </a>
                 <a href="/search" class="nav-link">
                     <i class="fas fa-search"></i> Recherche IA
                 </a>
+                <a href="/cases" class="nav-link">
+                    <i class="fas fa-folder"></i> Cas
+                </a>
                 <a href="/admin" class="nav-link" id="admin-link" style="display: none;">
                     <i class="fas fa-cog"></i> Administration
                 </a>
-                <button id="logout-btn" class="btn-secondary">
+                <button id="logout-btn" class="btn-secondary btn-sm">
                     <i class="fas fa-sign-out-alt"></i> Déconnexion
                 </button>
             </div>
@@ -145,11 +34,11 @@
     </nav>
     
     <div class="container">
-        <div class="welcome-banner">
-            <h2>
+        <div class="section-blue mb-4">
+            <h2 style="margin-bottom: 0.75rem;">
                 <i class="fas fa-user-circle"></i> Bienvenue, <span id="user-name">...</span>!
             </h2>
-            <p>
+            <p style="color: #4b5563; margin-bottom: 1.5rem;">
                 <i class="fas fa-info-circle"></i> Utilisez notre moteur de recherche IA pour trouver des cas de jurisprudence similaires à votre affaire.
             </p>
             <a href="/search" class="btn-primary">
@@ -157,46 +46,46 @@
             </a>
         </div>
         
-        <div class="stats-grid">
-            <div class="stat-card blue">
-                <div class="stat-icon blue">
-                    <i class="fas fa-gavel"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="total-cases">0</h3>
-                    <p>Cas de Jurisprudence</p>
-                </div>
-            </div>
-            
-            <div class="stat-card green">
-                <div class="stat-icon green">
-                    <i class="fas fa-search"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 id="user-searches">0</h3>
-                    <p>Mes Recherches</p>
+        <div class="grid grid-3 mb-4">
+            <div class="section-violet">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.5rem;">⚖️</div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin: 0;" id="total-cases">0</h3>
+                        <p style="color: #6b7280; margin: 0.25rem 0 0 0; font-size: 0.875rem;">Cas de Jurisprudence</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="stat-card violet">
-                <div class="stat-icon violet">
-                    <i class="fas fa-bookmark"></i>
+            <div class="section-emerald">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.5rem;">🔍</div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin: 0;" id="user-searches">0</h3>
+                        <p style="color: #6b7280; margin: 0.25rem 0 0 0; font-size: 0.875rem;">Mes Recherches</p>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <h3 id="recent-count">0</h3>
-                    <p>Cas Récents</p>
+            </div>
+            
+            <div class="section-cyan">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="font-size: 2.5rem;">📋</div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin: 0;" id="recent-count">0</h3>
+                        <p style="color: #6b7280; margin: 0.25rem 0 0 0; font-size: 0.875rem;">Cas Récents</p>
+                    </div>
                 </div>
             </div>
         </div>
         
         <div class="card">
-            <h2>
+            <h2 style="margin-bottom: 1rem;">
                 <i class="fas fa-history"></i> Cas Récents
             </h2>
             <div id="recent-cases">
-                <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                <div class="loading">
                     <i class="fas fa-spinner fa-spin"></i> Chargement des cas...
-                </p>
+                </div>
             </div>
         </div>
     </div>

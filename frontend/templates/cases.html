@@ -3,250 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base de Jurisprudence</title>
+    <title>Base de Jurisprudence - Cas</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: #e8f5e9;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 2rem 1rem;
-        }
-        
-        .cases-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .header-section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .header-section h1 {
-            margin: 0 0 1rem 0;
-            font-size: 1.5rem;
-            color: #1f2937;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .header-section h1::before {
-            content: "📚";
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn-select-all {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 0.65rem 1.25rem;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-select-all::before {
-            content: "✓";
-        }
-        
-        .btn-select-all:hover {
-            background: #3367d6;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
-        }
-        
-        .btn-delete-all {
-            background: #ea4335;
-            color: white;
-            border: none;
-            padding: 0.65rem 1.25rem;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .btn-delete-all::before {
-            content: "🗑";
-        }
-        
-        .btn-delete-all:hover {
-            background: #d33828;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(234, 67, 53, 0.3);
-        }
-        
-        .btn-back {
-            background: #f3f4f6;
-            color: #1f2937;
-            border: 1px solid #d1d5db;
-            padding: 0.65rem 1.25rem;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-back:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
-        }
-        
-        .table-section {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 3px dotted #4caf50;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .table-header {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1f2937;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .table-header::before {
-            content: "📋";
-        }
-        
-        .total-count {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-left: auto;
-        }
-        
-        .cases-table {
-            width: 100%;
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        
-        thead {
-            background: #4285f4;
-        }
-        
-        th {
-            padding: 0.85rem 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            color: white;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-        
-        th:first-child {
-            width: 40px;
-            text-align: center;
-        }
-        
-        td {
-            padding: 0.85rem 0.75rem;
-            border-bottom: 1px solid #e5e7eb;
-            color: #374151;
-        }
-        
-        td:first-child {
-            text-align: center;
-        }
-        
-        tbody tr:hover {
-            background-color: #f9fafb;
-        }
-        
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #4285f4;
-        }
-        
-        .ref-cell {
-            font-weight: 600;
-            color: #1f2937;
-        }
-        
-        .btn-view {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.9rem;
-            border-radius: 5px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .btn-view:hover {
-            background: #3367d6;
-            transform: scale(1.05);
-        }
-        
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-        }
-        
-        .page-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid #d1d5db;
-            background: white;
-            color: #374151;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-        }
-        
-        .page-btn:hover {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-        }
-        
-        .page-btn.active {
-            background: #4285f4;
-            color: white;
-            border-color: #4285f4;
-        }
-        
         .modal {
             display: none;
             position: fixed;
@@ -254,7 +14,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             padding: 2rem;
             overflow-y: auto;
@@ -265,95 +25,86 @@
             max-width: 900px;
             margin: 2rem auto;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 1rem;
             position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         
         .modal-close {
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: #f3f4f6;
+            background: var(--red-500);
+            color: white;
             border: none;
             width: 36px;
             height: 36px;
             border-radius: 50%;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: all 0.2s;
         }
         
         .modal-close:hover {
-            background: #e5e7eb;
-            color: #1f2937;
-        }
-        
-        .case-detail-section {
-            margin-bottom: 1.5rem;
-        }
-        
-        .case-detail-section h3 {
-            color: #4285f4;
-            margin-bottom: 0.75rem;
-            border-bottom: 2px solid #4285f4;
-            padding-bottom: 0.5rem;
-            font-size: 1.1rem;
-        }
-        
-        .case-detail-section p {
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 0.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn-select-all,
-            .btn-delete-all,
-            .btn-back {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            table {
-                font-size: 0.8rem;
-            }
-            
-            th, td {
-                padding: 0.6rem 0.5rem;
-            }
+            background: #dc2626;
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body>
-    <div class="cases-container">
-        <div class="header-section">
-            <h1>Base de Jurisprudence</h1>
-            <div class="action-buttons">
-                <button class="btn-select-all" onclick="toggleSelectAll()">Sélectionner tout</button>
-                <button class="btn-delete-all" onclick="deleteSelected()">Supprimer tout</button>
-                <button class="btn-back" onclick="window.location.href='/dashboard'">Retour au tableau de bord</button>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="/dashboard" class="navbar-brand">
+                <i class="fas fa-balance-scale"></i> Base de Jurisprudence
+            </a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-home"></i> Tableau de bord
+                </a>
+                <a href="/search" class="nav-link">
+                    <i class="fas fa-search"></i> Recherche IA
+                </a>
+                <a href="/cases" class="nav-link active">
+                    <i class="fas fa-folder"></i> Cas
+                </a>
+                <a href="/admin" class="nav-link" id="admin-link" style="display: none;">
+                    <i class="fas fa-cog"></i> Administration
+                </a>
+                <button id="logout-btn" class="btn-secondary btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="section-blue mb-3">
+            <h1 style="margin-bottom: 1rem;">
+                <i class="fas fa-folder-open"></i> Base de Jurisprudence
+            </h1>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <button class="btn-primary btn-sm" onclick="toggleSelectAll()">
+                    <i class="fas fa-check-square"></i> Sélectionner tout
+                </button>
+                <button class="btn-secondary btn-sm" onclick="deleteSelected()">
+                    <i class="fas fa-trash"></i> Supprimer sélection
+                </button>
             </div>
         </div>
         
-        <div class="table-section">
-            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                <div class="table-header">Base de Jurisprudence</div>
-                <div class="total-count">Total: <span id="totalCount">1</span> cas</div>
+        <div class="section-green">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 style="margin: 0;">
+                    <i class="fas fa-list"></i> Liste des cas
+                </h2>
+                <span class="badge-green" id="totalCount">0 cas</span>
             </div>
             
-            <div class="cases-table">
+            <div class="table-responsive">
                 <table id="casesTable">
                     <thead>
                         <tr>
-                            <th></th>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="cursor: pointer;"></th>
                             <th># Ref</th>
                             <th>📄 Titre</th>
                             <th>🏛 Juridiction</th>
@@ -363,20 +114,21 @@
                             <th>📅 Date</th>
                             <th>📑 Type</th>
                             <th>🏷 Thème</th>
+                            <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="casesTableBody">
                         <tr>
-                            <td colspan="10" style="text-align: center; padding: 2rem;">
-                                Chargement...
+                            <td colspan="11" style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-spinner fa-spin"></i> Chargement...
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            
+            <div id="pagination" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem;"></div>
         </div>
-        
-        <div class="pagination" id="pagination"></div>
     </div>
     
     <div id="caseModal" class="modal">
