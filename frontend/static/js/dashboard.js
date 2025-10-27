@@ -23,15 +23,18 @@ async function loadUserInfo() {
 
 async function loadStats() {
     try {
-        const response = await fetch('/api/stats', {
+        const casesResponse = await fetch('/api/cases', {
             credentials: 'include'
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('total-cases').textContent = data.total_cases;
-            document.getElementById('user-searches').textContent = data.user_searches;
+        if (casesResponse.ok) {
+            const casesData = await casesResponse.json();
+            document.getElementById('total-cases').textContent = casesData.cases.length;
+            document.getElementById('recent-count').textContent = Math.min(casesData.cases.length, 10);
         }
+        
+        document.getElementById('user-searches').textContent = 0;
+        
     } catch (error) {
         console.error('Erreur lors du chargement des statistiques:', error);
     }
@@ -39,7 +42,7 @@ async function loadStats() {
 
 async function loadRecentCases() {
     try {
-        const response = await fetch('/api/cases?per_page=5', {
+        const response = await fetch('/api/cases', {
             credentials: 'include'
         });
         
@@ -48,28 +51,47 @@ async function loadRecentCases() {
             const casesContainer = document.getElementById('recent-cases');
             
             if (data.cases.length === 0) {
-                casesContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem;">Aucun cas trouvé</p>';
+                casesContainer.innerHTML = `
+                    <p style="color: #6b7280; text-align: center; padding: 2rem;">
+                        <i class="fas fa-inbox"></i> Aucun cas trouvé
+                    </p>
+                `;
                 return;
             }
             
-            casesContainer.innerHTML = data.cases.map(c => `
-                <div class="card" style="margin-bottom: 1rem; border-left: 4px solid #3b82f6;">
-                    <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">${c.title}</h3>
-                    <div style="margin-bottom: 0.5rem;">
-                        <span class="badge-cyan">${c.case_number}</span>
-                        <span class="badge-green">${c.category}</span>
-                    </div>
-                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
-                        ${c.description.substring(0, 150)}...
-                    </p>
-                    <p style="font-size: 0.8rem; color: #9ca3af;">
-                        ${c.court} • ${new Date(c.date_decision).toLocaleDateString('fr-FR')}
-                    </p>
-                </div>
-            `).join('');
+            const recentCases = data.cases.slice(0, 10);
+            
+            casesContainer.innerHTML = `
+                <table class="recent-cases-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> Référence</th>
+                            <th><i class="fas fa-heading"></i> Titre</th>
+                            <th><i class="fas fa-landmark"></i> Juridiction</th>
+                            <th><i class="fas fa-calendar"></i> Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recentCases.map(c => `
+                            <tr>
+                                <td><strong>${c.ref || 'N/A'}</strong></td>
+                                <td>${c.titre || 'Sans titre'}</td>
+                                <td>${c.juridiction || 'N/A'}</td>
+                                <td>${c.date_decision || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
         }
     } catch (error) {
         console.error('Erreur:', error);
+        const casesContainer = document.getElementById('recent-cases');
+        casesContainer.innerHTML = `
+            <p style="color: #ef4444; text-align: center; padding: 2rem;">
+                <i class="fas fa-exclamation-triangle"></i> Erreur lors du chargement des cas
+            </p>
+        `;
     }
 }
 

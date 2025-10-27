@@ -2,12 +2,39 @@
 let currentBatchId = null;
 let extractedCaseData = null;
 
+// Charger les statistiques
+async function loadStats() {
+    try {
+        const [usersRes, casesRes] = await Promise.all([
+            fetch('/api/auth/admin/users', { credentials: 'include' }),
+            fetch('/api/cases', { credentials: 'include' })
+        ]);
+        
+        const usersData = await usersRes.json();
+        const casesData = await casesRes.json();
+        
+        const users = usersData.users || [];
+        const cases = casesData.cases || [];
+        
+        document.getElementById('stat-total-users').textContent = users.length;
+        document.getElementById('stat-total-cases').textContent = cases.length;
+        document.getElementById('stat-pending-users').textContent = 
+            users.filter(u => !u.is_approved).length;
+        document.getElementById('stat-admin-users').textContent = 
+            users.filter(u => u.is_admin).length;
+    } catch (error) {
+        console.error('Erreur lors du chargement des statistiques:', error);
+    }
+}
+
 // Gestion des tabs
-function switchTab(tabName) {
+function switchTab(tabName, evt) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     
-    event.target.classList.add('active');
+    if (evt && evt.target) {
+        evt.target.closest('.tab').classList.add('active');
+    }
     document.getElementById(`${tabName}-tab`).classList.add('active');
     
     if (tabName === 'users') loadUsers();
@@ -25,8 +52,14 @@ function showAlert(message, type = 'success') {
         background: ${type === 'success' ? '#d1fae5' : '#fee2e2'};
         color: ${type === 'success' ? '#065f46' : '#991b1b'};
         border: 3px dotted ${type === 'success' ? '#10b981' : '#ef4444'};
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     `;
-    alertDiv.textContent = message;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
     
     const container = document.getElementById('alert-container');
     container.appendChild(alertDiv);
@@ -36,7 +69,10 @@ function showAlert(message, type = 'success') {
 
 // Déconnexion
 document.getElementById('logout-btn').addEventListener('click', async () => {
-    const response = await fetch('/api/auth/logout', { method: 'POST' });
+    const response = await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include'
+    });
     if (response.ok) {
         window.location.href = '/';
     }
@@ -45,7 +81,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
 // Charger les utilisateurs
 async function loadUsers() {
     try {
-        const response = await fetch('/api/auth/admin/users');
+        const response = await fetch('/api/auth/admin/users', { credentials: 'include' });
         const data = await response.json();
         const users = data.users || [];
         
@@ -55,22 +91,55 @@ async function loadUsers() {
             return;
         }
         
-        usersList.innerHTML = users.map(user => `
-            <div class="card mb-2">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>${user.first_name} ${user.last_name}</strong><br>
-                        <span style="color: #6b7280; font-size: 0.875rem;">${user.email}</span>
-                        ${user.is_admin ? '<span style="color: #3b82f6; font-weight: 600; margin-left: 0.5rem;">Admin</span>' : ''}
-                    </div>
-                    <div>
-                        ${!user.is_approved ? `
-                            <button onclick="approveUser(${user.id})" class="btn-primary btn-sm">Approuver</button>
-                        ` : '<span style="color: #10b981; font-weight: 600;">Approuvé</span>'}
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        usersList.innerHTML = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nom</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-shield-alt"></i> Rôle</th>
+                        <th><i class="fas fa-check-circle"></i> Statut</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${users.map(user => `
+                        <tr>
+                            <td><strong>${user.first_name} ${user.last_name}</strong></td>
+                            <td>${user.email}</td>
+                            <td>
+                                ${user.is_admin ? 
+                                    '<span class="badge admin"><i class="fas fa-user-shield"></i> Admin</span>' : 
+                                    '<span class="badge" style="background: #e5e7eb; color: #374151;">Juriste</span>'}
+                            </td>
+                            <td>
+                                ${user.is_approved ? 
+                                    '<span class="badge approved"><i class="fas fa-check"></i> Approuvé</span>' : 
+                                    '<span class="badge pending"><i class="fas fa-clock"></i> En attente</span>'}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    ${!user.is_approved ? `
+                                        <button onclick="approveUser(${user.id})" class="action-btn approve">
+                                            <i class="fas fa-check"></i> Approuver
+                                        </button>
+                                    ` : `
+                                        <button onclick="suspendUser(${user.id})" class="action-btn suspend">
+                                            <i class="fas fa-ban"></i> Suspendre
+                                        </button>
+                                    `}
+                                    <button onclick="deleteUser(${user.id})" class="action-btn delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        loadStats();
     } catch (error) {
         showAlert('Erreur lors du chargement des utilisateurs', 'error');
     }
@@ -79,7 +148,10 @@ async function loadUsers() {
 // Approuver un utilisateur
 async function approveUser(userId) {
     try {
-        const response = await fetch(`/api/auth/admin/approve/${userId}`, { method: 'POST' });
+        const response = await fetch(`/api/auth/admin/approve/${userId}`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
         if (response.ok) {
             showAlert('Utilisateur approuvé avec succès');
             loadUsers();
@@ -89,15 +161,59 @@ async function approveUser(userId) {
     }
 }
 
+// Suspendre un utilisateur
+async function suspendUser(userId) {
+    if (!confirm('Êtes-vous sûr de vouloir suspendre cet utilisateur ?')) return;
+    
+    try {
+        const response = await fetch(`/api/auth/admin/suspend/${userId}`, { 
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Utilisateur suspendu avec succès');
+            loadUsers();
+        } else {
+            showAlert(data.error || 'Erreur lors de la suspension', 'error');
+        }
+    } catch (error) {
+        showAlert('Erreur lors de la suspension', 'error');
+    }
+}
+
+// Supprimer un utilisateur
+async function deleteUser(userId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) return;
+    
+    try {
+        const response = await fetch(`/api/auth/admin/users/${userId}`, { 
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Utilisateur supprimé avec succès');
+            loadUsers();
+        } else {
+            showAlert(data.error || 'Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showAlert('Erreur lors de la suppression', 'error');
+    }
+}
+
 // Charger les cas
 async function loadCases() {
     try {
-        const response = await fetch('/api/cases');
+        const response = await fetch('/api/cases', { credentials: 'include' });
         const data = await response.json();
         
         const casesList = document.getElementById('cases-list');
         if (data.cases.length === 0) {
-            casesList.innerHTML = '<p style="text-align: center; color: #6b7280;">Aucun cas de jurisprudence</p>';
+            casesList.innerHTML = '<p style="text-align: center; color: #6b7280;"><i class="fas fa-inbox"></i> Aucun cas de jurisprudence</p>';
             return;
         }
         
@@ -105,28 +221,32 @@ async function loadCases() {
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Ref</th>
-                        <th>Titre</th>
-                        <th>Juridiction</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th><i class="fas fa-hashtag"></i> Ref</th>
+                        <th><i class="fas fa-heading"></i> Titre</th>
+                        <th><i class="fas fa-landmark"></i> Juridiction</th>
+                        <th><i class="fas fa-calendar"></i> Date</th>
+                        <th><i class="fas fa-cog"></i> Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${data.cases.map(c => `
                         <tr>
-                            <td>${c.ref || 'N/A'}</td>
+                            <td><strong>${c.ref || 'N/A'}</strong></td>
                             <td>${c.titre || 'Sans titre'}</td>
                             <td>${c.juridiction || 'N/A'}</td>
                             <td>${c.date_decision || 'N/A'}</td>
                             <td>
-                                <button onclick="deleteCase(${c.id})" class="btn-secondary btn-sm">Supprimer</button>
+                                <button onclick="deleteCase(${c.id})" class="action-btn delete">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
                             </td>
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
         `;
+        
+        loadStats();
     } catch (error) {
         showAlert('Erreur lors du chargement des cas', 'error');
     }
@@ -137,7 +257,10 @@ async function deleteCase(caseId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce cas ?')) return;
     
     try {
-        const response = await fetch(`/api/cases/${caseId}`, { method: 'DELETE' });
+        const response = await fetch(`/api/cases/${caseId}`, { 
+            method: 'DELETE',
+            credentials: 'include'
+        });
         if (response.ok) {
             showAlert('Cas supprimé avec succès');
             loadCases();
@@ -150,7 +273,9 @@ async function deleteCase(caseId) {
 // Importation en masse - Upload
 document.getElementById('batch-files')?.addEventListener('change', (e) => {
     const count = e.target.files.length;
-    document.getElementById('file-count').textContent = `${count} fichier(s) sélectionné(s)`;
+    document.getElementById('file-count').innerHTML = `
+        <i class="fas fa-file-pdf"></i> <strong>${count}</strong> fichier(s) sélectionné(s)
+    `;
     if (count > 200) {
         showAlert('Maximum 200 fichiers par lot', 'error');
         e.target.value = '';
@@ -173,12 +298,13 @@ async function startBatchUpload() {
     
     document.getElementById('upload-btn').disabled = true;
     document.getElementById('batch-progress').style.display = 'block';
-    document.getElementById('batch-status-text').textContent = 'Upload en cours...';
+    document.getElementById('batch-status-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Upload en cours...';
     
     try {
         const response = await fetch('/api/batch/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
         
         const data = await response.json();
@@ -214,7 +340,8 @@ async function processBatch(batchId, totalFiles) {
                     batch_id: batchId,
                     start_index: startIndex,
                     batch_size: batchSize
-                })
+                }),
+                credentials: 'include'
             });
             
             const data = await response.json();
@@ -227,8 +354,8 @@ async function processBatch(batchId, totalFiles) {
             const progress = Math.round((processedCount / totalFiles) * 100);
             document.getElementById('progress-fill').style.width = `${progress}%`;
             document.getElementById('progress-fill').textContent = `${progress}%`;
-            document.getElementById('batch-status-text').textContent = 
-                `Traitement en cours... ${processedCount}/${totalFiles} fichiers`;
+            document.getElementById('batch-status-text').innerHTML = 
+                `<i class="fas fa-cog fa-spin"></i> Traitement en cours... ${processedCount}/${totalFiles} fichiers`;
             document.getElementById('success-count').textContent = successCount;
             document.getElementById('error-count').textContent = errorCount;
             
@@ -243,19 +370,20 @@ async function processBatch(batchId, totalFiles) {
         }
     }
     
-    document.getElementById('batch-status-text').textContent = 
-        `Terminé! ${successCount} succès, ${errorCount} erreurs`;
+    document.getElementById('batch-status-text').innerHTML = 
+        `<i class="fas fa-check-circle"></i> Terminé! ${successCount} succès, ${errorCount} erreurs`;
     
     if (allErrors.length > 0) {
         document.getElementById('error-details').style.display = 'block';
         document.getElementById('error-list').innerHTML = allErrors.map(err => `
-            <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: #fee2e2; border-radius: 4px;">
-                <strong>${err.filename}:</strong> ${err.error}
+            <div style="margin-bottom: 0.5rem; padding: 0.75rem; background: #fee2e2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                <strong><i class="fas fa-file-pdf"></i> ${err.filename}:</strong> ${err.error}
             </div>
         `).join('');
     }
     
     showAlert(`Importation terminée: ${successCount} succès, ${errorCount} erreurs`);
+    loadStats();
 }
 
 // Import PDF simple avec extraction automatique
@@ -276,7 +404,8 @@ async function importSinglePDF() {
         
         const response = await fetch('/api/import/single-pdf', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
         
         const data = await response.json();
@@ -288,7 +417,7 @@ async function importSinglePDF() {
             displayExtractedData(data.case);
             
             fileInput.value = '';
-            loadCases();
+            loadStats();
         } else {
             showAlert(data.error || 'Erreur lors de l\'extraction', 'error');
         }
@@ -302,12 +431,14 @@ function displayExtractedData(caseData) {
     const dataDiv = document.getElementById('extracted-data');
     
     dataDiv.innerHTML = `
-        <p><strong>Ref:</strong> ${caseData.ref || 'N/A'}</p>
-        <p><strong>Titre:</strong> ${caseData.titre || 'N/A'}</p>
-        <p><strong>Juridiction:</strong> ${caseData.juridiction || 'N/A'}</p>
-        <p><strong>Date:</strong> ${caseData.date_decision || 'N/A'}</p>
-        <p><strong>Thème:</strong> ${caseData.theme || 'N/A'}</p>
-        <p><strong>Mots-clés:</strong> ${caseData.mots_cles || 'N/A'}</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            <p><strong><i class="fas fa-hashtag"></i> Ref:</strong> ${caseData.ref || 'N/A'}</p>
+            <p><strong><i class="fas fa-heading"></i> Titre:</strong> ${caseData.titre || 'N/A'}</p>
+            <p><strong><i class="fas fa-landmark"></i> Juridiction:</strong> ${caseData.juridiction || 'N/A'}</p>
+            <p><strong><i class="fas fa-calendar"></i> Date:</strong> ${caseData.date_decision || 'N/A'}</p>
+            <p><strong><i class="fas fa-book"></i> Thème:</strong> ${caseData.theme || 'N/A'}</p>
+            <p><strong><i class="fas fa-tags"></i> Mots-clés:</strong> ${caseData.mots_cles || 'N/A'}</p>
+        </div>
     `;
     
     preview.style.display = 'block';
@@ -340,7 +471,8 @@ document.getElementById('add-case-form')?.addEventListener('submit', async (e) =
         const response = await fetch('/api/cases', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            credentials: 'include'
         });
         
         const data = await response.json();
@@ -348,6 +480,7 @@ document.getElementById('add-case-form')?.addEventListener('submit', async (e) =
         if (response.ok) {
             showAlert('Cas ajouté avec succès!');
             e.target.reset();
+            loadStats();
         } else {
             showAlert(data.error || 'Erreur lors de l\'ajout', 'error');
         }
@@ -356,5 +489,6 @@ document.getElementById('add-case-form')?.addEventListener('submit', async (e) =
     }
 });
 
-// Charger les utilisateurs au démarrage
+// Charger les données initiales
+loadStats();
 loadUsers();

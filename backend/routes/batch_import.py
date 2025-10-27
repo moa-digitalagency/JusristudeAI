@@ -246,7 +246,7 @@ def import_single_pdf():
                 'error': f'Un cas avec la référence {extracted_data["ref"]} existe déjà'
             }), 409
         
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename or 'document.pdf')
         timestamp = int(time.time())
         save_folder = os.path.join(UPLOAD_FOLDER, 'single')
         os.makedirs(save_folder, exist_ok=True)
