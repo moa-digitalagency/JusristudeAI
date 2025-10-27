@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recherche IA - Plateforme Jurisprudence</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
+    <style>
+        .search-methods {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .method-card {
+            flex: 1;
+            padding: 1.5rem;
+            border: 3px dotted #d1d5db;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .method-card:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .method-card.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .search-option {
+            display: none;
+        }
+        .search-option.active {
+            display: block;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -22,29 +55,73 @@
     <div class="container">
         <h1>Recherche Intelligente de Jurisprudence</h1>
         
-        <div class="section-blue mb-4">
-            <h3>Décrivez votre cas</h3>
-            <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
-                Notre IA analysera votre description et recherchera des cas similaires dans notre base de données de 2970+ décisions.
-            </p>
-            
-            <form id="search-form">
-                <div class="form-group">
-                    <label class="form-label" for="case-description">Description du cas</label>
-                    <textarea 
-                        id="case-description" 
-                        class="input-field" 
-                        rows="6" 
-                        placeholder="Décrivez les faits, le contexte juridique et les questions de droit..."
-                        required
-                        style="resize: vertical;"
-                    ></textarea>
-                </div>
+        <div class="search-methods">
+            <div class="method-card active" onclick="switchSearchMethod('text', event)">
+                <h3 style="margin-bottom: 0.5rem;">📝 Par Description</h3>
+                <p style="font-size: 0.875rem; color: #6b7280;">
+                    Décrivez votre cas en quelques phrases
+                </p>
+            </div>
+            <div class="method-card" onclick="switchSearchMethod('file', event)">
+                <h3 style="margin-bottom: 0.5rem;">📄 Par Document</h3>
+                <p style="font-size: 0.875rem; color: #6b7280;">
+                    Importez un PDF ou Word
+                </p>
+            </div>
+        </div>
+        
+        <div id="text-search" class="search-option active">
+            <div class="section-blue mb-4">
+                <h3>Décrivez votre cas</h3>
+                <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                    Notre IA analysera votre description et recherchera des cas similaires dans notre base de données de 2970+ décisions.
+                </p>
                 
-                <button type="submit" class="btn-primary" id="search-btn">
-                    Rechercher des cas similaires
-                </button>
-            </form>
+                <form id="search-form">
+                    <div class="form-group">
+                        <label class="form-label" for="case-description">Description du cas</label>
+                        <textarea 
+                            id="case-description" 
+                            class="input-field" 
+                            rows="6" 
+                            placeholder="Décrivez les faits, le contexte juridique et les questions de droit..."
+                            style="resize: vertical;"
+                        ></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="search-btn">
+                        Rechercher des cas similaires
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="file-search" class="search-option">
+            <div class="section-violet mb-4">
+                <h3>Importer un document</h3>
+                <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.875rem;">
+                    Importez un document PDF ou Word contenant les informations sur votre cas. L'IA extraira automatiquement le texte et recherchera des cas similaires.
+                </p>
+                
+                <form id="file-search-form">
+                    <div class="form-group">
+                        <label class="form-label" for="case-file">Fichier (PDF ou Word)</label>
+                        <input 
+                            type="file" 
+                            id="case-file" 
+                            class="input-field" 
+                            accept=".pdf,.docx"
+                        >
+                        <p style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">
+                            Formats acceptés: PDF, DOCX
+                        </p>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="file-search-btn">
+                        Analyser le document
+                    </button>
+                </form>
+            </div>
         </div>
         
         <div id="loading" style="display: none;" class="card text-center">
@@ -59,13 +136,6 @@
             <div id="results-content"></div>
         </div>
     </div>
-    
-    <style>
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-    </style>
     
     <script src="/static/js/search.js"></script>
 </body>

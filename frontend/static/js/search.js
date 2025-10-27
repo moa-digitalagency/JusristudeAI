@@ -18,10 +18,33 @@ async function loadUserInfo() {
     }
 }
 
+function switchSearchMethod(method, evt) {
+    document.querySelectorAll('.method-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    document.querySelectorAll('.search-option').forEach(option => {
+        option.classList.remove('active');
+    });
+    
+    if (evt && evt.target) {
+        evt.target.closest('.method-card').classList.add('active');
+    } else {
+        document.querySelector(`.method-card[onclick*="${method}"]`)?.classList.add('active');
+    }
+    
+    document.getElementById(`${method}-search`).classList.add('active');
+}
+
 document.getElementById('search-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const caseDescription = document.getElementById('case-description').value;
+    
+    if (!caseDescription.trim()) {
+        alert('Veuillez décrire votre cas');
+        return;
+    }
+    
     const searchBtn = document.getElementById('search-btn');
     const loading = document.getElementById('loading');
     const resultsContainer = document.getElementById('results-container');
@@ -56,6 +79,55 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
         loading.style.display = 'none';
         searchBtn.disabled = false;
         searchBtn.textContent = 'Rechercher des cas similaires';
+        displayError('Erreur de connexion au serveur');
+    }
+});
+
+document.getElementById('file-search-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const fileInput = document.getElementById('case-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Veuillez sélectionner un fichier');
+        return;
+    }
+    
+    const searchBtn = document.getElementById('file-search-btn');
+    const loading = document.getElementById('loading');
+    const resultsContainer = document.getElementById('results-container');
+    
+    searchBtn.disabled = true;
+    searchBtn.textContent = 'Analyse en cours...';
+    loading.style.display = 'block';
+    resultsContainer.style.display = 'none';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/search/file', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        loading.style.display = 'none';
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Analyser le document';
+        
+        if (response.ok) {
+            displayResults(data);
+        } else {
+            displayError(data.error || 'Erreur lors de l\'analyse du fichier');
+        }
+    } catch (error) {
+        loading.style.display = 'none';
+        searchBtn.disabled = false;
+        searchBtn.textContent = 'Analyser le document';
         displayError('Erreur de connexion au serveur');
     }
 });
