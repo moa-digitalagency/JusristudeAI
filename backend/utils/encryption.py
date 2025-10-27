@@ -3,7 +3,10 @@ from backend.config import Config
 
 class EncryptionService:
     def __init__(self):
-        self.cipher = Fernet(Config.ENCRYPTION_KEY.encode() if isinstance(Config.ENCRYPTION_KEY, str) else Config.ENCRYPTION_KEY)
+        key = Config.ENCRYPTION_KEY
+        if key is None:
+            raise ValueError("ENCRYPTION_KEY must be set in environment variables")
+        self.cipher = Fernet(key.encode() if isinstance(key, str) else key)
     
     def encrypt(self, data: str) -> str:
         if not data:

@@ -7,6 +7,9 @@ from backend.models.user import db, User
 from backend.routes.auth import auth_bp, bcrypt
 from backend.routes.cases import cases_bp
 from backend.routes.batch_import import batch_import_bp
+from backend.utils.secrets_checker import secrets_checker
+
+secrets_checker.check_and_exit_if_missing_critical()
 
 app = Flask(__name__, 
             template_folder='../frontend/templates',
