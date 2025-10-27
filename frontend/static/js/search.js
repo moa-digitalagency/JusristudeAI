@@ -50,12 +50,14 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     const resultsContainer = document.getElementById('results-container');
     
     searchBtn.disabled = true;
-    searchBtn.textContent = 'Recherche en cours...';
+    searchBtn.textContent = 'Analyse en cours...';
     loading.style.display = 'block';
     resultsContainer.style.display = 'none';
     
+    // Utiliser EventSource pour le streaming SSE
     try {
-        const response = await fetch('/api/search', {
+        // Créer une requête POST pour initier le streaming
+        const response = await fetch('/api/search/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -64,22 +66,62 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
             body: JSON.stringify({ query: caseDescription })
         });
         
-        const data = await response.json();
-        
-        loading.style.display = 'none';
-        searchBtn.disabled = false;
-        searchBtn.textContent = 'Rechercher des cas similaires';
-        
-        if (response.ok) {
-            displayResults(data);
-        } else {
-            displayError(data.error || 'Erreur lors de la recherche');
+        if (!response.ok) {
+            throw new Error('Erreur de connexion');
         }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Garder la dernière ligne incomplète
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const data = line.slice(6);
+                    try {
+                        const message = JSON.parse(data);
+                        
+                        if (message.type === 'progress' || message.type === 'thinking') {
+                            // Afficher le message de progression
+                            const loadingText = document.querySelector('#loading p');
+                            if (loadingText) {
+                                loadingText.innerHTML = `
+                                    <span style="display: inline-block; animation: pulse 1.5s ease-in-out infinite;">🔍</span>
+                                    ${message.message}
+                                `;
+                            }
+                        } else if (message.type === 'complete') {
+                            // Afficher les résultats finaux
+                            loading.style.display = 'none';
+                            searchBtn.disabled = false;
+                            searchBtn.textContent = 'Rechercher des cas similaires';
+                            displayResults(message.result);
+                        } else if (message.type === 'error') {
+                            loading.style.display = 'none';
+                            searchBtn.disabled = false;
+                            searchBtn.textContent = 'Rechercher des cas similaires';
+                            displayError(message.message);
+                        }
+                    } catch (e) {
+                        console.error('Erreur de parsing:', e);
+                    }
+                }
+            }
+        }
+        
     } catch (error) {
         loading.style.display = 'none';
         searchBtn.disabled = false;
         searchBtn.textContent = 'Rechercher des cas similaires';
-        displayError('Erreur de connexion au serveur');
+        displayError('Erreur de connexion au serveur: ' + error.message);
     }
 });
 

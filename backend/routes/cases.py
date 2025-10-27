@@ -178,6 +178,39 @@ def search_similar_cases():
     
     return jsonify(ai_result), 200
 
+@cases_bp.route('/search/stream', methods=['POST'])
+@login_required
+def search_similar_cases_stream():
+    """Version avec streaming pour afficher la réflexion de l'IA en temps réel"""
+    data = request.get_json()
+    query = data.get('query', '')
+    
+    if not query:
+        return jsonify({'error': 'Requête vide'}), 400
+    
+    all_cases = JurisprudenceCase.query.all()
+    decrypted_cases = [case.to_dict(decrypt=True) for case in all_cases]
+    
+    # Sauvegarder l'historique de recherche
+    search_history = SearchHistory(
+        user_id=current_user.id,
+        query_encrypted=encryption_service.encrypt(query),
+        results_count=len(decrypted_cases)
+    )
+    db.session.add(search_history)
+    db.session.commit()
+    
+    # Retourner un générateur pour le streaming SSE
+    from flask import Response
+    return Response(
+        ai_service.find_similar_cases_streaming(query, decrypted_cases),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
+
 @cases_bp.route('/cases/stats', methods=['GET'])
 @login_required
 def get_case_stats():
