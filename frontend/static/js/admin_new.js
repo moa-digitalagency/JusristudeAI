@@ -1,6 +1,8 @@
 // Variables globales
 let currentBatchId = null;
 let extractedCaseData = null;
+let selectedFiles = [];
+let fileStatuses = {};
 
 // Charger les statistiques
 async function loadStats() {
@@ -270,56 +272,214 @@ async function deleteCase(caseId) {
     }
 }
 
-// Importation en masse - Upload
+// Importation en masse - Sélection de fichiers
 document.getElementById('batch-files')?.addEventListener('change', (e) => {
-    const count = e.target.files.length;
-    document.getElementById('file-count').innerHTML = `
-        <i class="fas fa-file-pdf"></i> <strong>${count}</strong> fichier(s) sélectionné(s)
-    `;
+    selectedFiles = Array.from(e.target.files);
+    const count = selectedFiles.length;
+    
+    document.getElementById('file-count-number').textContent = count;
+    
     if (count > 200) {
         showAlert('Maximum 200 fichiers par lot', 'error');
         e.target.value = '';
+        selectedFiles = [];
+        document.getElementById('file-count-number').textContent = '0';
+        return;
+    }
+    
+    if (count > 0) {
+        document.getElementById('load-files-btn').style.display = 'inline-block';
     }
 });
 
-async function startBatchUpload() {
-    const fileInput = document.getElementById('batch-files');
-    const files = fileInput.files;
-    
-    if (files.length === 0) {
+// Précharger et afficher la liste des fichiers
+function loadFilesList() {
+    if (selectedFiles.length === 0) {
         showAlert('Veuillez sélectionner des fichiers', 'error');
         return;
     }
     
+    fileStatuses = {};
+    const filesList = document.getElementById('files-list');
+    document.getElementById('total-files-count').textContent = selectedFiles.length;
+    
+    filesList.innerHTML = selectedFiles.map((file, index) => {
+        fileStatuses[index] = 'pending';
+        return `
+            <div id="file-item-${index}" class="file-item" style="
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 0.75rem;
+                margin-bottom: 0.5rem;
+                background: white;
+                border: 2px dotted #d1d5db;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            ">
+                <div style="flex-shrink: 0;">
+                    <i id="file-icon-${index}" class="fas fa-file-pdf" style="font-size: 1.5rem; color: #ef4444;"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${file.name}
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280;">
+                        ${(file.size / 1024).toFixed(2)} KB
+                    </div>
+                </div>
+                <div id="file-status-${index}" style="flex-shrink: 0;">
+                    <span class="badge pending"><i class="fas fa-clock"></i> En attente</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('files-list-section').style.display = 'block';
+    document.getElementById('load-files-btn').style.display = 'none';
+    
+    showAlert(`${selectedFiles.length} fichiers prêts à être importés`, 'success');
+}
+
+async function startBatchImport() {
+    if (selectedFiles.length === 0) {
+        showAlert('Aucun fichier à importer', 'error');
+        return;
+    }
+    
+    document.getElementById('start-import-btn').disabled = true;
+    document.getElementById('batch-progress').style.display = 'block';
+    document.getElementById('pending-count').textContent = selectedFiles.length;
+    document.getElementById('batch-status-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Préparation de l\'importation...';
+    
+    // Étape 1: Upload de tous les fichiers
     const formData = new FormData();
-    for (let file of files) {
+    for (let file of selectedFiles) {
         formData.append('files[]', file);
     }
     
-    document.getElementById('upload-btn').disabled = true;
-    document.getElementById('batch-progress').style.display = 'block';
-    document.getElementById('batch-status-text').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Upload en cours...';
-    
     try {
-        const response = await fetch('/api/batch/upload', {
+        const uploadResponse = await fetch('/api/batch/upload', {
             method: 'POST',
             body: formData,
             credentials: 'include'
         });
         
-        const data = await response.json();
+        const uploadData = await uploadResponse.json();
         
-        if (response.ok) {
-            currentBatchId = data.batch_id;
-            showAlert(`${data.uploaded_count} fichiers uploadés avec succès`);
-            await processBatch(currentBatchId, data.uploaded_count);
-        } else {
-            showAlert(data.error || 'Erreur lors de l\'upload', 'error');
+        if (!uploadResponse.ok) {
+            showAlert(uploadData.error || 'Erreur lors de l\'upload', 'error');
+            document.getElementById('start-import-btn').disabled = false;
+            return;
         }
+        
+        currentBatchId = uploadData.batch_id;
+        
+        // Étape 2: Traiter les fichiers un par un
+        await processFilesOneByOne(currentBatchId, selectedFiles.length);
+        
     } catch (error) {
-        showAlert('Erreur lors de l\'upload: ' + error.message, 'error');
-    } finally {
-        document.getElementById('upload-btn').disabled = false;
+        showAlert('Erreur lors de l\'importation: ' + error.message, 'error');
+        document.getElementById('start-import-btn').disabled = false;
+    }
+}
+
+async function processFilesOneByOne(batchId, totalFiles) {
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (let i = 0; i < totalFiles; i++) {
+        // Mettre à jour le statut visuel
+        updateFileStatus(i, 'processing');
+        
+        document.getElementById('batch-status-text').innerHTML = 
+            `<i class="fas fa-cog fa-spin"></i> Traitement de ${selectedFiles[i].name} (${i + 1}/${totalFiles})`;
+        
+        try {
+            const response = await fetch('/api/batch/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    batch_id: batchId,
+                    start_index: i,
+                    batch_size: 1
+                }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success > 0) {
+                successCount++;
+                updateFileStatus(i, 'success', data.details[0]?.ref);
+            } else if (data.errors && data.errors.length > 0) {
+                errorCount++;
+                updateFileStatus(i, 'error', data.errors[0]?.error);
+            }
+            
+        } catch (error) {
+            errorCount++;
+            updateFileStatus(i, 'error', error.message);
+        }
+        
+        // Mettre à jour les compteurs
+        const progress = Math.round(((i + 1) / totalFiles) * 100);
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+        document.getElementById('progress-fill').textContent = `${progress}%`;
+        document.getElementById('success-count').textContent = successCount;
+        document.getElementById('error-count').textContent = errorCount;
+        document.getElementById('pending-count').textContent = totalFiles - (i + 1);
+        
+        // Petit délai entre chaque fichier pour éviter la surcharge
+        await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    // Importation terminée
+    document.getElementById('batch-status-text').innerHTML = 
+        `<i class="fas fa-check-circle"></i> Importation terminée! ${successCount} succès, ${errorCount} erreurs`;
+    
+    showAlert(`Importation terminée: ${successCount} succès, ${errorCount} erreurs`);
+    document.getElementById('start-import-btn').disabled = false;
+    loadStats();
+}
+
+function updateFileStatus(index, status, message = '') {
+    const fileItem = document.getElementById(`file-item-${index}`);
+    const fileIcon = document.getElementById(`file-icon-${index}`);
+    const fileStatusEl = document.getElementById(`file-status-${index}`);
+    
+    if (!fileItem) return;
+    
+    fileStatuses[index] = status;
+    
+    switch (status) {
+        case 'processing':
+            fileItem.style.borderColor = '#f59e0b';
+            fileItem.style.background = 'rgba(245, 158, 11, 0.05)';
+            fileIcon.className = 'fas fa-spinner fa-spin';
+            fileIcon.style.color = '#f59e0b';
+            fileStatusEl.innerHTML = '<span class="badge" style="background: #fef3c7; color: #92400e; border: 2px solid #f59e0b;"><i class="fas fa-spinner fa-spin"></i> En cours...</span>';
+            fileItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            break;
+            
+        case 'success':
+            fileItem.style.borderColor = '#10b981';
+            fileItem.style.background = 'rgba(16, 185, 129, 0.05)';
+            fileIcon.className = 'fas fa-check-circle';
+            fileIcon.style.color = '#10b981';
+            fileStatusEl.innerHTML = `<span class="badge approved"><i class="fas fa-check"></i> Importé${message ? ` (${message})` : ''}</span>`;
+            break;
+            
+        case 'error':
+            fileItem.style.borderColor = '#ef4444';
+            fileItem.style.background = 'rgba(239, 68, 68, 0.05)';
+            fileIcon.className = 'fas fa-times-circle';
+            fileIcon.style.color = '#ef4444';
+            fileStatusEl.innerHTML = `<span class="badge suspended"><i class="fas fa-times"></i> Erreur</span>`;
+            if (message) {
+                fileStatusEl.innerHTML += `<div style="font-size: 0.75rem; color: #991b1b; margin-top: 0.25rem;">${message}</div>`;
+            }
+            break;
     }
 }
 

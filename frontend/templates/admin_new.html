@@ -320,18 +320,31 @@
             <div class="card">
                 <h2><i class="fas fa-cloud-upload-alt"></i> Importation en Masse de PDFs</h2>
                 <p style="color: #6b7280; margin-bottom: 1.5rem;">
-                    Importez jusqu'à 200 PDFs à la fois. Les fichiers seront traités par lots pour éviter les timeout.
+                    Importez jusqu'à 200 PDFs à la fois. Les fichiers seront traités un par un pour éviter les erreurs.
                 </p>
                 
                 <div class="section-blue">
                     <h3><i class="fas fa-file-pdf"></i> Sélectionner les PDFs</h3>
                     <input type="file" id="batch-files" accept=".pdf" multiple class="input-field">
                     <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem;" id="file-count">
-                        <i class="fas fa-info-circle"></i> Aucun fichier sélectionné
+                        <i class="fas fa-info-circle"></i> <span id="file-count-number">0</span> fichier(s) sélectionné(s)
                     </p>
-                    <button onclick="startBatchUpload()" class="btn-primary mt-2" id="upload-btn">
-                        <i class="fas fa-upload"></i> Uploader les fichiers
+                    <button onclick="loadFilesList()" class="btn-primary mt-2" id="load-files-btn">
+                        <i class="fas fa-list"></i> Précharger la liste
                     </button>
+                </div>
+                
+                <!-- Liste des fichiers préchargés -->
+                <div id="files-list-section" style="display: none;" class="mt-4">
+                    <div class="section-violet">
+                        <h3><i class="fas fa-list-ul"></i> Fichiers à importer (<span id="total-files-count">0</span>)</h3>
+                        <div id="files-list" style="max-height: 400px; overflow-y: auto; margin: 1rem 0;">
+                            <!-- La liste sera générée dynamiquement -->
+                        </div>
+                        <button onclick="startBatchImport()" class="btn-primary" id="start-import-btn">
+                            <i class="fas fa-play"></i> Démarrer l'importation
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="batch-progress" style="display: none;" class="mt-4">
@@ -343,13 +356,9 @@
                         <p id="batch-status-text" style="margin-top: 1rem;">En attente...</p>
                         <div style="margin-top: 1rem;">
                             <strong><i class="fas fa-check-circle" style="color: #10b981;"></i> Succès:</strong> <span id="success-count">0</span> | 
-                            <strong><i class="fas fa-times-circle" style="color: #ef4444;"></i> Erreurs:</strong> <span id="error-count">0</span>
+                            <strong><i class="fas fa-times-circle" style="color: #ef4444;"></i> Erreurs:</strong> <span id="error-count">0</span> |
+                            <strong><i class="fas fa-hourglass-half" style="color: #f59e0b;"></i> En attente:</strong> <span id="pending-count">0</span>
                         </div>
-                    </div>
-                    
-                    <div id="error-details" style="display: none;" class="mt-4">
-                        <h4><i class="fas fa-exclamation-triangle"></i> Détails des erreurs:</h4>
-                        <div id="error-list" style="max-height: 300px; overflow-y: auto; background: #fff; padding: 1rem; border-radius: 8px;"></div>
                     </div>
                 </div>
             </div>
