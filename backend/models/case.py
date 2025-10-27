@@ -60,12 +60,23 @@ class JurisprudenceCase(db.Model):
         }
         
         if decrypt:
-            if self.resume_francais_encrypted:
-                data['resume_francais'] = encryption_service.decrypt(self.resume_francais_encrypted)
-            if self.resume_arabe_encrypted:
-                data['resume_arabe'] = encryption_service.decrypt(self.resume_arabe_encrypted)
-            if self.texte_integral_encrypted:
-                data['texte_integral'] = encryption_service.decrypt(self.texte_integral_encrypted)
+            try:
+                if self.resume_francais_encrypted:
+                    data['resume_francais'] = encryption_service.decrypt(self.resume_francais_encrypted)
+            except Exception as e:
+                data['resume_francais'] = "[Erreur de déchiffrement - clé de chiffrement invalide]"
+            
+            try:
+                if self.resume_arabe_encrypted:
+                    data['resume_arabe'] = encryption_service.decrypt(self.resume_arabe_encrypted)
+            except Exception as e:
+                data['resume_arabe'] = "[خطأ في فك التشفير - مفتاح تشفير غير صالح]"
+            
+            try:
+                if self.texte_integral_encrypted:
+                    data['texte_integral'] = encryption_service.decrypt(self.texte_integral_encrypted)
+            except Exception as e:
+                data['texte_integral'] = "[Erreur de déchiffrement - clé de chiffrement invalide]"
         
         return data
 
