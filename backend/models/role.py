@@ -1,7 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-
-db = SQLAlchemy()
+from backend.models.user import db
 
 # Table d'association pour la relation many-to-many entre Role et Permission
 role_permissions = db.Table('role_permissions',
