@@ -134,45 +134,45 @@ h3 {
 }
 
 .section-blue {
-    background: rgba(59, 130, 246, 0.05);
-    border: 3px dotted var(--primary-blue-500);
-    border-radius: 1rem;
+    background: white;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
 }
 
 .section-blue:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .section-green {
-    background: rgba(34, 197, 94, 0.05);
-    border: 3px dotted var(--green-500);
-    border-radius: 1rem;
+    background: white;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(34, 197, 94, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
 }
 
 .section-green:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .section-violet {
-    background: rgba(139, 92, 246, 0.08);
-    border: 3px dotted var(--violet-500);
-    border-radius: 1rem;
+    background: white;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
 }
 
 .section-violet:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .badge-green {
@@ -199,8 +199,8 @@ h3 {
 
 .navbar {
     background: white;
-    border-bottom: 3px dotted #93c5fd;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    border-bottom: 2px solid #e5e7eb;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
     padding: 1rem 0;
     margin-bottom: 2rem;
 }

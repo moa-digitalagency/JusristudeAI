@@ -16,24 +16,24 @@
         
         .stat-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 1.5rem;
-            border: 3px dotted;
             display: flex;
             align-items: center;
             gap: 1.5rem;
             transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
         
-        .stat-card.blue { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
-        .stat-card.green { border-color: #10b981; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
-        .stat-card.violet { border-color: #8b5cf6; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
-        .stat-card.orange { border-color: #f59e0b; background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
+        .stat-card.blue { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+        .stat-card.green { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+        .stat-card.violet { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); }
+        .stat-card.orange { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); }
         
         .stat-icon {
             width: 60px;
@@ -69,7 +69,6 @@
             display: flex;
             gap: 0.5rem;
             margin-bottom: 2rem;
-            border-bottom: 3px dotted #3b82f6;
             padding-bottom: 0.5rem;
             flex-wrap: wrap;
         }
@@ -77,24 +76,26 @@
         .tab {
             padding: 0.75rem 1.5rem;
             background: white;
-            border: 3px dotted #d1d5db;
-            border-radius: 12px;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: 500;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
         
         .tab:hover {
             background: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
         }
         
         .tab.active {
-            background: #3b82f6;
+            background: #4285f4;
             color: white;
-            border-color: #3b82f6;
         }
         
         .tab-content {
@@ -285,13 +286,13 @@
         .detail-item {
             background: #f9fafb;
             padding: 1rem;
-            border-radius: 12px;
-            border: 2px dotted #e5e7eb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
         }
         
         .detail-item strong {
             display: block;
-            color: #3b82f6;
+            color: #4285f4;
             margin-bottom: 0.5rem;
             font-size: 0.875rem;
         }
@@ -307,7 +308,7 @@
         
         .detail-section h3 {
             color: #1f2937;
-            border-bottom: 3px dotted #3b82f6;
+            border-bottom: 2px solid #4285f4;
             padding-bottom: 0.5rem;
             margin-bottom: 1rem;
         }
@@ -315,8 +316,8 @@
         .detail-text {
             background: #f9fafb;
             padding: 1.5rem;
-            border-radius: 12px;
-            border: 2px dotted #e5e7eb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
             white-space: pre-wrap;
             line-height: 1.6;
         }
