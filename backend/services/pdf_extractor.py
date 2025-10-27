@@ -15,6 +15,7 @@ class PDFExtractor:
         self.field_patterns = {
             'ref': [
                 r'Ref\s*:?\s*(\d+)',
+                r'Ref\s*\n\s*(\d+)',
                 r'R[ée]f[ée]rence\s*:?\s*(\d+)'
             ],
             'titre': [
