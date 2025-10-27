@@ -41,8 +41,10 @@ Preferred communication style: Simple, everyday language.
 **Design Pattern**: Service-oriented architecture
 - **Services Layer**:
   - `AIService`: Handles OpenRouter API integration for case similarity analysis
+    - `find_similar_cases()`: Standard synchronous search
+    - `find_similar_cases_streaming()` (NEW): Real-time streaming search with progress updates
   - `EncryptionService`: Manages Fernet encryption/decryption of legal data
-  - `PDFExtractorService` (NEW): Extracts structured data from Moroccan legal case PDFs using regex pattern matching
+  - `PDFExtractorService`: Extracts structured data from Moroccan legal case PDFs using regex pattern matching
 - **Models Layer**: SQLAlchemy ORM models
   - `User`: Authentication and user management
   - `JurisprudenceCase`: Legal case storage with 20+ fields including bilingual support and encrypted content
@@ -170,6 +172,21 @@ Preferred communication style: Simple, everyday language.
 - Added bilingual support (French/Arabic) with separate encrypted fields
 - Implemented Moroccan legal case structure (juridiction, chambre, base_legale, etc.)
 
+### AI Search Improvements (October 27, 2025)
+- **Enhanced Text Indexing**: AI now analyzes BOTH French and Arabic summaries for better similarity matching
+- **Bilingual Search**: Even if the query is in French, the AI compares it with Arabic summaries too
+- **Real-time AI Reflection**: New streaming endpoint shows AI's thinking process during analysis
+- **Progress Indicators**: Users see step-by-step progress messages during AI analysis
+  - "Indexation des cas de jurisprudence..."
+  - "X cas indexés sur Y au total"
+  - "L'IA analyse les cas... (cela peut prendre 15-30 secondes)"
+  - "Réflexion en cours..."
+  - "Traitement de la réponse de l'IA..."
+- **Enhanced User Experience**: No more blank loading screens - users see what the AI is doing
+- **File**: `backend/services/ai_service.py` - Added `find_similar_cases_streaming()` method
+- **File**: `backend/routes/cases.py` - Added `/api/search/stream` endpoint with Server-Sent Events (SSE)
+- **File**: `frontend/static/js/search.js` - Updated to use streaming API with real-time progress display
+
 ### Bulk PDF Import System
 - **File**: `backend/routes/batch_import.py`
 - **Capability**: Process up to 200 PDFs simultaneously
@@ -209,3 +226,14 @@ Preferred communication style: Simple, everyday language.
   - Bulk import interface (200 PDFs)
   - Real-time progress tracking
   - Migration controls
+
+### UI/UX Enhancements (October 27, 2025)
+- **Case Detail Page Updates**:
+  - Header: Changed from colored background to white with dotted purple border
+  - Content Blocks: Added solid borders (2px solid) to info-grid and text-content sections
+  - Version française: Automatic detection and separation into dedicated indigo section
+  - All sub-blocks now use solid continuous borders instead of left-border only
+- **Search Experience**: 
+  - Real-time progress messages during AI analysis
+  - No more confusing blank loading screens
+  - Users understand what's happening at each step
