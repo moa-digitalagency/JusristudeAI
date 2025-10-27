@@ -57,11 +57,15 @@
 - ✅ Recommandations pour la plaidoirie
 
 ### Interface de Recherche
+- ✅ **Double mode** : Description texte OU upload de document
+- ✅ **Upload de fichiers** : PDF et Word (.docx)
+- ✅ Extraction automatique du texte depuis les documents
 - ✅ Zone de texte pour décrire le cas
 - ✅ Validation de la requête
 - ✅ Indicateur de chargement animé
 - ✅ Affichage formaté des résultats
 - ✅ Gestion des erreurs avec messages clairs
+- ✅ Onglets pour basculer entre les modes
 
 ### Historique
 - ✅ Enregistrement chiffré de toutes les recherches
@@ -72,16 +76,23 @@
 ## 👨‍💼 Administration
 
 ### Gestion des Utilisateurs
-- ✅ Liste des utilisateurs en attente d'approbation
-- ✅ Approbation en un clic
-- ✅ Informations détaillées : nom, email, date d'inscription
-- ✅ Mise à jour en temps réel après approbation
+- ✅ **CRUD Complet** : Liste, mise à jour, suppression des utilisateurs
+- ✅ **Filtrage** : Tous / En attente / Approuvés
+- ✅ **Actions en masse** : Approbation, suspension, suppression
+- ✅ **Protection** : Impossible de supprimer/suspendre son propre compte
+- ✅ Informations détaillées : nom, email, date d'inscription, statut
+- ✅ Mise à jour en temps réel après chaque action
+- ✅ Badges de statut (En attente/Approuvé/Admin)
 - ✅ Accès réservé aux administrateurs
 
 ### Gestion du Contenu
-- ✅ Ajout de nouveaux cas de jurisprudence
+- ✅ **CRUD Complet** : Liste, création, modification, suppression des cas
+- ✅ **Importation en masse** : CSV, Excel, PDF
+- ✅ Validation automatique des fichiers importés
+- ✅ Extraction de texte depuis PDF pour import
 - ✅ Formulaire complet avec tous les champs
 - ✅ Validation des données côté client et serveur
+- ✅ Modale d'édition pour modification rapide
 - ✅ Messages de confirmation/erreur
 - ✅ Réinitialisation du formulaire après succès
 
@@ -112,8 +123,12 @@
 - ✅ **Login** : Connexion sécurisée avec compte test
 - ✅ **Register** : Inscription avec validation
 - ✅ **Dashboard** : Vue d'ensemble avec stats
-- ✅ **Search** : Recherche IA de cas similaires
-- ✅ **Admin** : Gestion utilisateurs et ajout de cas
+- ✅ **Search** : Recherche IA (texte + documents)
+- ✅ **Admin** : Interface complète avec onglets
+  - Gestion des utilisateurs (CRUD)
+  - Gestion de la jurisprudence (CRUD)
+  - Importation de données (CSV, Excel, PDF)
+  - Ajout de cas individuels
 
 ### Responsive Design
 - ✅ Mobile-friendly avec media queries
@@ -140,21 +155,27 @@
 
 ### Endpoints d'Authentification
 ```
-POST /api/auth/register       - Inscription
-POST /api/auth/login          - Connexion
-POST /api/auth/logout         - Déconnexion
-GET  /api/auth/me             - Info utilisateur
-GET  /api/auth/admin/users    - Utilisateurs en attente
-POST /api/auth/admin/approve/:id - Approuver utilisateur
+POST   /api/auth/register            - Inscription
+POST   /api/auth/login               - Connexion
+POST   /api/auth/logout              - Déconnexion
+GET    /api/auth/me                  - Info utilisateur
+GET    /api/auth/admin/users         - Liste utilisateurs (filtrage)
+POST   /api/auth/admin/approve/:id   - Approuver utilisateur
+PUT    /api/auth/admin/users/:id     - Mettre à jour utilisateur
+DELETE /api/auth/admin/users/:id     - Supprimer utilisateur
 ```
 
 ### Endpoints de Jurisprudence
 ```
-GET  /api/cases               - Liste paginée des cas
-GET  /api/cases/:id           - Détails d'un cas
-POST /api/cases               - Créer un cas (admin)
-POST /api/search              - Recherche IA
-GET  /api/stats               - Statistiques utilisateur
+GET    /api/cases               - Liste paginée des cas
+GET    /api/cases/:id           - Détails d'un cas
+POST   /api/cases               - Créer un cas (admin)
+PUT    /api/cases/:id           - Modifier un cas (admin)
+DELETE /api/cases/:id           - Supprimer un cas (admin)
+POST   /api/cases/import        - Importer CSV/Excel/PDF (admin)
+POST   /api/search              - Recherche IA par texte
+POST   /api/search/file         - Recherche IA par fichier
+GET    /api/stats               - Statistiques utilisateur
 ```
 
 ### Format des Réponses
@@ -229,20 +250,43 @@ GET  /api/stats               - Statistiques utilisateur
 - ✅ Séparation des responsabilités
 - ✅ Gestion d'erreurs robuste
 
+## ✅ Nouvelles Fonctionnalités (Octobre 2025)
+
+### Import et Export
+- ✅ **Import CSV** : Importation de cas depuis fichiers CSV
+- ✅ **Import Excel** : Support des fichiers .xlsx avec pandas
+- ✅ **Import PDF** : Extraction de texte depuis documents PDF
+- ✅ **Validation** : Vérification automatique des données importées
+- ✅ **Gestion d'erreurs** : Messages clairs pour chaque ligne en erreur
+
+### Recherche Avancée
+- ✅ **Upload de documents** : PDF et Word pour recherche IA
+- ✅ **Extraction automatique** : Parsing du texte des documents
+- ✅ **Double interface** : Choix entre texte et fichier
+- ✅ **Même précision** : Analyse IA identique pour les deux modes
+
+### Administration Complète
+- ✅ **Interface à onglets** : Navigation intuitive
+- ✅ **Gestion utilisateurs** : CRUD complet avec filtres
+- ✅ **Gestion jurisprudence** : CRUD complet avec édition
+- ✅ **Import en masse** : Support de multiples formats
+- ✅ **Ajout rapide** : Formulaire dédié pour nouveaux cas
+
 ## 🎯 Prochaines Fonctionnalités
 
 Consultez [CHANGELOG.md](CHANGELOG.md) pour la roadmap complète.
 
-### Priorités V1.1
-1. Export PDF des résultats
-2. Filtres de recherche avancés
-3. Notifications email
+### Priorités V1.2
+1. Export PDF des résultats de recherche
+2. Filtres de recherche avancés (par tribunal, date, catégorie)
+3. Notifications email pour approbations
 4. API documentée avec Swagger
-5. Tests automatisés
+5. Tests automatisés unitaires et d'intégration
 
 ### Vision à Long Terme
-- Application mobile native
-- Intégration bases de données externes
-- OCR pour numérisation de documents
-- Chatbot juridique contextuel
-- Collaboration en temps réel
+- Application mobile native (iOS/Android)
+- Intégration bases de données juridiques externes
+- OCR avancé pour numérisation de jugements papier
+- Chatbot juridique contextuel avec RAG
+- Collaboration en temps réel entre avocats
+- Génération automatique de mémoires
