@@ -8,6 +8,7 @@ from backend.routes.auth import auth_bp, bcrypt
 from backend.routes.cases import cases_bp
 from backend.routes.batch_import import batch_import_bp
 from backend.routes.roles import roles_bp
+from backend.routes.settings import settings_bp
 from backend.utils.secrets_checker import secrets_checker
 
 secrets_checker.check_and_exit_if_missing_critical()
@@ -24,6 +25,7 @@ csrf.exempt(auth_bp)
 csrf.exempt(cases_bp)
 csrf.exempt(batch_import_bp)
 csrf.exempt(roles_bp)
+csrf.exempt(settings_bp)
 
 db.init_app(app)
 bcrypt.init_app(app)
@@ -43,6 +45,7 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(cases_bp, url_prefix='/api')
 app.register_blueprint(batch_import_bp, url_prefix='/api')
 app.register_blueprint(roles_bp, url_prefix='/api')
+app.register_blueprint(settings_bp, url_prefix='/api')
 
 @app.after_request
 def add_header(response):
@@ -75,6 +78,10 @@ def admin_page():
 def admin_roles_page():
     return render_template('admin_roles.html')
 
+@app.route('/admin/settings')
+def admin_settings_page():
+    return render_template('admin_settings.html')
+
 @app.route('/cases')
 def cases_page():
     return render_template('cases.html')
@@ -99,6 +106,13 @@ with app.app_context():
         initialize_roles_and_permissions(app)
     except Exception as e:
         print(f"⚠️  Error initializing roles and permissions: {e}")
+    
+    try:
+        from backend.models.settings import Settings
+        Settings.initialize_defaults()
+        print("✓ Paramètres initialisés")
+    except Exception as e:
+        print(f"⚠️  Error initializing settings: {e}")
     
     try:
         from backend.models.role import Role
