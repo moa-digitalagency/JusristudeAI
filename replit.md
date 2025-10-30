@@ -1,10 +1,10 @@
-# Plateforme de Jurisprudence IA
+# LexIA - Intelligence Artificielle au service du Droit
 
 ## Overview
 
-A professional legal research platform that enables lawyers and legal professionals to search for case law (jurisprudence) using artificial intelligence. The application leverages OpenRouter's AI API to analyze legal cases and find similar precedents, helping legal professionals build stronger arguments and identify relevant case law.
+**LexIA** is a professional legal research platform that enables lawyers and legal professionals to search for case law (jurisprudence) using artificial intelligence. The application leverages OpenRouter's AI API to analyze legal cases and find similar precedents, helping legal professionals build stronger arguments and identify relevant case law.
 
-The platform features secure authentication, encrypted data storage, role-based access control, an intelligent search system, and **bulk PDF import capabilities** that can process up to 200 legal case PDFs at once with automatic field extraction from Moroccan legal case documents.
+The platform features secure authentication, encrypted data storage, role-based access control, an intelligent search system, **bulk PDF import capabilities** that can process up to 200 legal case PDFs at once, and a **comprehensive settings system** allowing administrators to configure the platform name, branding, and SEO metadata dynamically.
 
 ## User Preferences
 
@@ -30,7 +30,9 @@ Preferred communication style: Simple, everyday language.
 - **Application Structure**: Blueprint-based modular architecture
   - `auth_bp`: Authentication routes (login, register, logout, user info)
   - `cases_bp`: Case management routes (CRUD operations, search, stats) - UPDATED with new fields
-  - `batch_import_bp` (NEW): Bulk PDF import routes (upload, process, status tracking)
+  - `batch_import_bp`: Bulk PDF import routes (upload, process, status tracking)
+  - `roles_bp`: Role and permission management routes
+  - `settings_bp` (NEW): Platform settings configuration routes (editable branding, SEO)
 - **Session Management**: Flask-Login for user session handling
 - **Security Features**:
   - CSRF protection via Flask-WTF
@@ -49,6 +51,8 @@ Preferred communication style: Simple, everyday language.
   - `User`: Authentication and user management
   - `JurisprudenceCase`: Legal case storage with 20+ fields including bilingual support and encrypted content
   - `SearchHistory`: User search tracking with encrypted queries
+  - `Role`: Role-based access control system
+  - `Settings` (NEW): Configurable platform parameters (name, tagline, SEO metadata)
 
 **Key Architectural Decisions**:
 1. **Encryption-First Approach**: All sensitive legal data (case descriptions, facts, decisions, search queries) are encrypted at rest using Fernet symmetric encryption
@@ -78,6 +82,8 @@ Preferred communication style: Simple, everyday language.
     - **File**: pdf_file_path
     - **Metadata**: created_at, updated_at, created_by (foreign key to users)
   - `search_history` table: id, user_id (foreign key), query_encrypted, results_count, created_at
+  - `roles` table: id, name, description, permissions (JSON), created_at
+  - `settings` table (NEW): id, key (unique/indexed), value, description, updated_at
 
 **Encryption Strategy**:
 - Encrypted fields: French/Arabic summaries, full decision text, search queries
@@ -237,3 +243,40 @@ Preferred communication style: Simple, everyday language.
   - Real-time progress messages during AI analysis
   - No more confusing blank loading screens
   - Users understand what's happening at each step
+
+### LexIA Branding & Settings System (October 30, 2025)
+- **Beautiful Login Page Redesign**:
+  - Modern gradient background with animated dot pattern (purple-to-pink gradient)
+  - Professional LexIA logo (SVG) with floating animation
+  - Platform name displayed in gradient text
+  - Icons for email and password fields
+  - Gradient button with smooth hover effects
+  - Full SEO meta tags integration
+  - **File**: `frontend/templates/login.html` - Complete redesign with modern aesthetics
+
+- **Dynamic Settings System**:
+  - **Model**: `backend/models/settings.py` - New Settings model for configurable parameters
+  - **Routes**: `backend/routes/settings.py` - API endpoints for settings management
+  - **Admin Page**: `frontend/templates/admin_settings.html` - Full settings editor interface
+  - **Configurable Parameters**:
+    - `platform_name`: Editable platform name (default: "LexIA")
+    - `platform_tagline`: Editable tagline (default: "Intelligence Artificielle au service du Droit")
+    - `platform_description`: SEO description for meta tags
+    - `platform_keywords`: SEO keywords for meta tags
+    - `admin_email`: Administrator email for notifications
+    - `max_upload_size`: Maximum upload size in MB
+    - `max_batch_import`: Maximum PDFs for batch import
+
+- **SEO Implementation**:
+  - **Meta Tags**: All pages now include proper SEO meta tags (description, keywords, OG tags, Twitter cards)
+  - **Dynamic Updates**: Platform name and metadata update across all pages automatically
+  - **Script**: `frontend/static/js/platform-settings.js` - Shared script for loading and applying settings
+  - **Data Attributes**: Templates use `data-platform-name` attributes for automatic updates
+  - **Updated Templates**: login.html, register.html, dashboard.html, search.html all include SEO tags
+
+- **Admin Settings Interface**:
+  - `/admin/settings` route for settings management
+  - Real-time settings updates (no server restart required)
+  - Two main sections: Identity (branding) and System (technical)
+  - Complete settings table view showing all parameters
+  - Instant preview of changes across the platform

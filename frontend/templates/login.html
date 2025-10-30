@@ -17,8 +17,9 @@
     <meta name="twitter:title" content="LexIA - Intelligence Artificielle au service du Droit">
     <meta name="twitter:description" content="Plateforme de recherche juridique alimentée par l'IA">
     
-    <title id="page-title">Connexion - LexIA</title>
+    <title data-dynamic data-page-title="Connexion">Connexion - LexIA</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
+    <script src="/static/js/platform-settings.js"></script>
     
     <style>
         body.login-page {
@@ -164,8 +165,8 @@
                     <path d="M 50 150 Q 100 140, 150 150" stroke="url(#logoGradient)" stroke-width="3" fill="none" opacity="0.5"/>
                 </svg>
                 
-                <h1 class="platform-name" id="platform-name">LexIA</h1>
-                <p class="platform-tagline" id="platform-tagline">Intelligence Artificielle au service du Droit</p>
+                <h1 class="platform-name" data-platform-name>LexIA</h1>
+                <p class="platform-tagline" data-platform-tagline>Intelligence Artificielle au service du Droit</p>
             </div>
             
             <div id="alert-container"></div>
@@ -218,29 +219,5 @@
     </div>
     
     <script src="/static/js/login.js"></script>
-    <script>
-        async function loadPlatformSettings() {
-            try {
-                const response = await fetch('/api/settings');
-                if (response.ok) {
-                    const data = await response.json();
-                    const settings = data.settings;
-                    
-                    if (settings.platform_name) {
-                        document.getElementById('platform-name').textContent = settings.platform_name;
-                        document.getElementById('page-title').textContent = `Connexion - ${settings.platform_name}`;
-                    }
-                    
-                    if (settings.platform_tagline) {
-                        document.getElementById('platform-tagline').textContent = settings.platform_tagline;
-                    }
-                }
-            } catch (error) {
-                console.log('Using default platform settings');
-            }
-        }
-        
-        loadPlatformSettings();
-    </script>
 </body>
 </html>
