@@ -3,19 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Base de Jurisprudence</title>
+    <meta name="description" content="LexIA - Intelligence Artificielle au service du Droit. Plateforme de recherche juridique alimentée par l'IA pour trouver des précédents et analyser des cas">
+    <meta name="keywords" content="jurisprudence, IA juridique, recherche juridique, cas juridiques, intelligence artificielle, droit, LexIA">
+    <meta name="author" content="LexIA">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="LexIA - Intelligence Artificielle au service du Droit">
+    <meta property="og:description" content="Plateforme de recherche juridique alimentée par l'IA pour trouver des précédents et analyser des cas">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/static/img/lexia-og.png">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LexIA - Intelligence Artificielle au service du Droit">
+    <meta name="twitter:description" content="Plateforme de recherche juridique alimentée par l'IA">
+    
+    <title id="page-title">Connexion - LexIA</title>
     <link rel="stylesheet" href="/static/css/moa-design.css">
+    
+    <style>
+        body.login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body.login-page::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+        
+        @keyframes moveBackground {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .lexia-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .platform-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        
+        .platform-tagline {
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon .input-field {
+            padding-left: 2.5rem;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary-gradient:hover {
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .test-account-box {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
+            border: 3px dotted #06b6d4;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 6px rgba(6, 182, 212, 0.1);
+        }
+    </style>
 </head>
 <body class="login-page">
     <div class="login-container" style="max-width: 600px;">
         <div class="login-card section-blue">
-            <div class="login-header">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #3b82f6; margin-bottom: 1rem;">
-                    <path d="M3 7h18M3 12h18M3 17h18"/>
-                    <rect x="2" y="3" width="20" height="18" rx="2" ry="2"/>
+            <div class="logo-container">
+                <svg class="lexia-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <circle cx="100" cy="100" r="95" fill="url(#logoGradient)" opacity="0.1"/>
+                    
+                    <path d="M 60 70 L 60 130 L 85 130" stroke="url(#logoGradient)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    
+                    <path d="M 100 70 L 100 130 M 100 70 L 130 95 M 130 95 L 100 120" stroke="url(#logoGradient)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    
+                    <circle cx="150" cy="70" r="5" fill="url(#logoGradient)"/>
+                    <path d="M 150 85 L 150 130" stroke="url(#logoGradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                    
+                    <path d="M 50 150 Q 100 140, 150 150" stroke="url(#logoGradient)" stroke-width="3" fill="none" opacity="0.5"/>
                 </svg>
-                <h1>Base de Jurisprudence</h1>
-                <p class="login-subtitle">Système de gestion et recherche de cas juridiques</p>
+                
+                <h1 class="platform-name" id="platform-name">LexIA</h1>
+                <p class="platform-tagline" id="platform-tagline">Intelligence Artificielle au service du Droit</p>
             </div>
             
             <div id="alert-container"></div>
@@ -23,32 +173,44 @@
             <form id="login-form">
                 <div class="form-group">
                     <label class="form-label" for="email">Email</label>
-                    <input type="email" id="email" class="input-field" placeholder="votre.email@example.com" required>
+                    <div class="input-with-icon">
+                        <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <input type="email" id="email" class="input-field" placeholder="votre.email@example.com" required>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label" for="password">Mot de passe</label>
-                    <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                    <div class="input-with-icon">
+                        <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="password" class="input-field" placeholder="••••••••" required>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                <button type="submit" class="btn-primary-gradient">
                     Connexion
                 </button>
                 
                 <p class="text-center" style="font-size: 0.875rem; color: #6b7280;">
-                    Pas encore de compte ? <a href="/register" class="link-primary">S'inscrire</a>
+                    Pas encore de compte ? <a href="/register" style="color: #667eea; font-weight: 600; text-decoration: none;">S'inscrire</a>
                 </p>
             </form>
         </div>
         
-        <div class="section-cyan" style="margin-top: 1.5rem;">
+        <div class="test-account-box">
             <div style="display: flex; align-items: start; gap: 1rem;">
                 <div style="font-size: 1.5rem;">ℹ️</div>
                 <div>
-                    <h3 style="margin-bottom: 0.5rem;">Compte administrateur de test</h3>
-                    <p style="font-size: 0.875rem; margin: 0;">
-                        Email: <strong>admin@jurisprudence.com</strong><br>
-                        Mot de passe: <strong>Admin123!</strong>
+                    <h3 style="margin-bottom: 0.5rem; color: #0e7490;">Compte administrateur de test</h3>
+                    <p style="font-size: 0.875rem; margin: 0; color: #374151;">
+                        Email: <strong style="color: #0e7490;">admin@jurisprudence.com</strong><br>
+                        Mot de passe: <strong style="color: #0e7490;">Admin123!</strong>
                     </p>
                 </div>
             </div>
@@ -56,5 +218,29 @@
     </div>
     
     <script src="/static/js/login.js"></script>
+    <script>
+        async function loadPlatformSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                if (response.ok) {
+                    const data = await response.json();
+                    const settings = data.settings;
+                    
+                    if (settings.platform_name) {
+                        document.getElementById('platform-name').textContent = settings.platform_name;
+                        document.getElementById('page-title').textContent = `Connexion - ${settings.platform_name}`;
+                    }
+                    
+                    if (settings.platform_tagline) {
+                        document.getElementById('platform-tagline').textContent = settings.platform_tagline;
+                    }
+                }
+            } catch (error) {
+                console.log('Using default platform settings');
+            }
+        }
+        
+        loadPlatformSettings();
+    </script>
 </body>
 </html>

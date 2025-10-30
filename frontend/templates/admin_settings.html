@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Paramètres - LexIA</title>
+    <link rel="stylesheet" href="/static/css/moa-design.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <span class="navbar-title" id="platform-name-nav">LexIA</span>
+            </div>
+            <div class="navbar-menu">
+                <a href="/dashboard" class="navbar-item">Tableau de bord</a>
+                <a href="/search" class="navbar-item">Recherche IA</a>
+                <a href="/cases" class="navbar-item">Jurisprudence</a>
+                <a href="/admin" class="navbar-item">Administration</a>
+                <a href="/admin/roles" class="navbar-item">Rôles</a>
+                <a href="/admin/settings" class="navbar-item active">Paramètres</a>
+                <a href="#" id="logout-btn" class="navbar-item">Déconnexion</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 2rem;">
+        <div class="section-violet" style="margin-bottom: 2rem;">
+            <h1>⚙️ Paramètres de la Plateforme</h1>
+            <p style="color: var(--gray-600); margin-top: 0.5rem;">
+                Configurez les paramètres généraux de la plateforme. Ces modifications s'appliqueront instantanément à tous les utilisateurs.
+            </p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <div class="section-blue">
+            <h2>🎨 Identité de la Plateforme</h2>
+            
+            <div class="form-group">
+                <label class="form-label" for="platform-name">Nom de la plateforme</label>
+                <input type="text" id="platform-name" class="input-field" placeholder="LexIA">
+                <small style="color: var(--gray-500);">Le nom affiché partout sur la plateforme</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="platform-tagline">Slogan</label>
+                <input type="text" id="platform-tagline" class="input-field" placeholder="Intelligence Artificielle au service du Droit">
+                <small style="color: var(--gray-500);">Le slogan affiché sur la page de connexion</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="platform-description">Description SEO</label>
+                <textarea id="platform-description" class="input-field" rows="3" placeholder="Plateforme de recherche juridique..."></textarea>
+                <small style="color: var(--gray-500);">Description pour les moteurs de recherche (meta description)</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="platform-keywords">Mots-clés SEO</label>
+                <input type="text" id="platform-keywords" class="input-field" placeholder="jurisprudence, IA juridique, recherche juridique">
+                <small style="color: var(--gray-500);">Mots-clés séparés par des virgules</small>
+            </div>
+
+            <button id="save-identity-btn" class="btn-primary btn-lg">
+                💾 Enregistrer l'identité
+            </button>
+        </div>
+
+        <div class="section-green" style="margin-top: 2rem;">
+            <h2>📧 Configuration Système</h2>
+            
+            <div class="form-group">
+                <label class="form-label" for="admin-email">Email administrateur principal</label>
+                <input type="email" id="admin-email" class="input-field" placeholder="admin@jurisprudence.com">
+                <small style="color: var(--gray-500);">Email utilisé pour les notifications système</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="max-upload-size">Taille max upload (MB)</label>
+                <input type="number" id="max-upload-size" class="input-field" placeholder="100" min="1" max="500">
+                <small style="color: var(--gray-500);">Taille maximale des fichiers uploadés (en mégaoctets)</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="max-batch-import">Nombre max PDFs (import masse)</label>
+                <input type="number" id="max-batch-import" class="input-field" placeholder="200" min="1" max="1000">
+                <small style="color: var(--gray-500);">Nombre maximum de PDFs pour un import en masse</small>
+            </div>
+
+            <button id="save-system-btn" class="btn-primary btn-lg">
+                💾 Enregistrer la configuration
+            </button>
+        </div>
+
+        <div class="section-cyan" style="margin-top: 2rem;">
+            <h2>📋 Tous les Paramètres</h2>
+            <div id="all-settings-container">
+                <p style="color: var(--gray-500);">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin_settings.js"></script>
+</body>
+</html>
